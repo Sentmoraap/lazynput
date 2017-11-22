@@ -1,0 +1,183 @@
+# This file uses only ASCII characters and have a hard limit of 120 characters per line.
+
+interfaces
+{
+    # This section defines the interfaces a game controller can expose.
+    # A game can provide default mappings for one or several interfaces depending on the game genre.
+    # One can easily add support for more controller types by extending this section.
+ 
+    # Use btn for absolute inputs that cannot be negative.
+    # Use abs for absolute inputs that can be negative.
+    # Use rel for relative inputs.
+
+    # Absolute inputs can be digital or analog.
+    # For example, a gamepad may or may not have analog triggers, and some controllers have pressure sensitive buttons.
+    # A d-pad is a common example of two digital inputs that can be negative.
+
+
+    # This is for inputs that dose't belong to any interface, but are still useful to be mapped.
+    # Inputs should be assigned in order.
+    extra
+    {
+        btn:
+        b0  b1  b2  b3
+        b4  b5  b6  b7
+        b8  b9  b10 b11
+        b12 b13 b14 b15
+        b16 b17 b18 b19
+        b20 b21 b22 b23
+        b24 b25 b26 b27
+        b28 b29 b30 b31
+
+        abs:
+        a0  a1  a2  a3
+        a4  a5  a6  a7
+        a8  a9  a10 a11
+        a12 a13 a14 a15
+
+        rel:
+        r0  r1  r2  r3
+        r4  r5  r6  r7
+        r8  r9  r10 r11
+        r12 r13 r14 r15
+    }
+
+    # This is the interface that most games can reasonably expect to be fully implemented.
+    # If a game needs fewer inputs, it should provide default mappings for the most commonly found inputs.
+    # For example, map the movement on both the d-pad and the left stick if the d-pad is not needed for another actions.
+    basic_gamepad
+    {
+        abs:
+        dpx dpy
+        lsx lsy
+        rsx rsy
+
+        btn:
+        a b x y
+        l1 l2 r1 r2 ls rs
+        select start
+    }
+
+    # An interface for extra inputs that can be found on some controller.
+    extended_gamepad
+    {
+        btn:
+        c z
+        l3 l4 r4 r4
+        guide capture
+    }
+
+    # This interface can be used for devices that provides motion controls.
+    motion_controls
+    {
+        abs:
+        accelx
+        accely
+        accelz
+        magx
+        magy
+        magz
+
+        rel:
+        gyrox
+        gyroy
+        gyroz
+    }
+
+    # Possible future additions:
+    # arcade_stick, dance_pad, steering_wheel, flight_stick, etc...
+}
+
+labels
+{
+    # This section provides labels that are commonly found on controllers.
+    # An inputs can have a sRGB color when it's color is distinctive.
+    # Dollar names can be used for shapes and logos. The game should display the correct picture or a localized name.
+    # A layout can extend another one and override some of it's parents' labels.
+
+    ps1
+    {
+        basic_gamepad:
+        a       "$CROSS"    #7EABE2
+        b       "$CIRCLE"   #E23838
+        x       "$SQUARE"   #D08ED2
+        y       "$TRIANGLE" #49DA7C
+        l1      "L1"
+        r1      "R1"
+        l2      "L2"
+        r2      "R2"
+        ls      "L3"
+        rs      "R3"
+        select  "Select"
+        start   "Start"
+    }
+    
+    ps3 : ps1
+    {
+        extended_gamepad:
+        guide   "$PS_LOGO"
+    }
+
+    snes
+    {
+        basic_gamepad:
+        a       "B"         #FECE15
+        b       "A"         #EB1A1D
+        x       "Y"         #008D45
+        y       "X"         #0749B4
+        l1      "L"
+        r1      "R"
+        select  "Select"
+        start   "Start"
+    }
+}
+
+devices
+{
+    # This is the game input device databese, sorted by vendor ID and product ID.
+    # A device can extend and override another similar device.
+    # Device-specific labels are also given here.
+    
+    # The mappings assumes the d-pads are exposed as d-pads and not as extra axes or buttons.
+    # It also assumes that any axis exposed from the input library can be negative.
+    # Mapping an device axis to an interface button binds the whole axis' range by default.
+    # You can map device's half axes and inverted axes if needed.
+
+    # If a device needs different mappings depending on the operating system, driver version or some other parameters,
+    # it can provide overrides depending on the parameters.
+    # They can also be nested if needed.
+    # There are no examples in this list yet.
+
+    044f.b323
+    {
+        name = "Thrustmaster Dual Trigger 3-in-1 Rumble Force"
+        interfaces = basic_gamepad extended_gamepad
+        labels = ps1 + 
+        {
+            # L3 and R3 refers to the joystick clicks on Playstation controllers.
+            # LT & RT refers to the Xbox 360 triggers and avoid confusion.
+            l3      "LT"
+            r3      "RT"
+            guide   "Mode"
+        }
+        # This mapping assumes the controller is in 6 axis mode.
+        default:
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a5
+            a=b1 b=b2 x=b0 y=b3 l1=b4 r1=b5 l2=b6 r2=b7 l3=~a3 r3=~a4
+            ls=b10 rs=b11 select=b8 start=b9
+    }
+
+    044f.b324 : 044f.b323
+    {
+        # Same controller in PS3 mode
+        default: guide=b12
+    }
+
+    0583.2060
+    {
+        name = "iBuffalo Classic USB Gamepad"
+        labels = snes
+        interfaces = basic_gamepad
+        default: dpx=a0 dpy=a1 sa=b1 b=b0 x=b3 y=b2 l1=b4 r1=b5 select=b6 start=b7
+    }
+}
