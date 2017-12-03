@@ -5,7 +5,7 @@ interfaces
     # This section defines the interfaces a game controller can expose.
     # A game can provide default mappings for one or several interfaces depending on the game genre.
     # One can easily add support for more controller types by extending this section.
- 
+
     # Use btn for absolute inputs that cannot be negative.
     # Use abs for absolute inputs that can be negative.
     # Use rel for relative inputs.
@@ -14,8 +14,7 @@ interfaces
     # For example, a gamepad may or may not have analog triggers, and some controllers have pressure sensitive buttons.
     # A d-pad is a common example of two digital inputs that can be negative.
 
-
-    # This is for inputs that dose't belong to any interface, but are still useful to be mapped.
+    # This is for inputs that doesn't belong to any interface, but are still useful to be mapped.
     # Inputs should be assigned in order.
     extra
     {
@@ -98,10 +97,10 @@ labels
     ps1
     {
         basic_gamepad:
-        a       "$CROSS"    #7EABE2
-        b       "$CIRCLE"   #E23838
-        x       "$SQUARE"   #D08ED2
-        y       "$TRIANGLE" #49DA7C
+        a       "$CROSS"    7EABE2
+        b       "$CIRCLE"   E23838
+        x       "$SQUARE"   D08ED2
+        y       "$TRIANGLE" 49DA7C
         l1      "L1"
         r1      "R1"
         l2      "L2"
@@ -111,7 +110,7 @@ labels
         select  "Select"
         start   "Start"
     }
-    
+
     ps3 : ps1
     {
         extended_gamepad:
@@ -121,10 +120,10 @@ labels
     snes
     {
         basic_gamepad:
-        a       "B"         #FECE15
-        b       "A"         #EB1A1D
-        x       "Y"         #008D45
-        y       "X"         #0749B4
+        a       "B"         FECE15
+        b       "A"         EB1A1D
+        x       "Y"         008D45
+        y       "X"         0749B4
         l1      "L"
         r1      "R"
         select  "Select"
@@ -134,10 +133,10 @@ labels
 
 devices
 {
-    # This is the game input device databese, sorted by vendor ID and product ID.
+    # This is the game input device database, sorted by vendor ID and product ID.
     # A device can extend and override another similar device.
     # Device-specific labels are also given here.
-    
+
     # The mappings assumes the d-pads are exposed as d-pads and not as extra axes or buttons.
     # It also assumes that any axis exposed from the input library can be negative.
     # Mapping an device axis to an interface button binds the whole axis' range by default.
@@ -152,7 +151,7 @@ devices
     {
         name = "Thrustmaster Dual Trigger 3-in-1 Rumble Force"
         interfaces = basic_gamepad extended_gamepad
-        labels = ps1 + 
+        labels = ps1 +
         {
             # L3 and R3 refers to the joystick clicks on Playstation controllers.
             # LT & RT refers to the Xbox 360 triggers and avoid confusion.
