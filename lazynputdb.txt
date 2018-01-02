@@ -57,12 +57,12 @@ interfaces
         select start
     }
 
-    # An interface for extra inputs that can be found on some controller.
+    # An interface for extra inputs that can be found on some controllers.
     extended_gamepad
     {
         btn:
         c z
-        l3 l4 r4 r4
+        l3 l4 r3 r4
         guide capture
     }
 

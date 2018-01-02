@@ -4,6 +4,8 @@
 #include <iostream>
 #include <vector>
 #include "Device.hpp"
+#include "Types.hpp"
+#include "StrHash.hpp"
 
 namespace Lazynput
 {
@@ -14,37 +16,53 @@ namespace Lazynput
     /// Use it to parse a config file and get the Devices info.
     class DevicesDb
     {
+        private:
+            /// Interface definitions.
+            InterfacesDb interfacesDb;
+
+            //std::unordered_map<HidIds, DeviceConfigData> devices;
+
         public:
             /// \brief Set variables that apply to every device.
             ///
             /// Set variales that can be used to use device mapping overrides when they are provided.
+            /// It uses an iterator to a container of C strings or std::strings.
+            /// Teplate instanciations are provided for C arrays and some STL containers of const C strings and const
+            /// std::strings.
+            /// Include DevicesDb.tpp to instanciate it with other iterators.
             ///
-            /// \param configTags : non device-specific configuration tags.
-            void setGlobalConfigTags(const std::vector<std::string> configTags);
+            /// \param begin : an iterator to a non device-specific configuration tags container.
+            /// \param end : the end iterator.
+            template<class ForwardIteratorType>
+            void setGlobalConfigTags(ForwardIteratorType begin, ForwardIteratorType end);
 
             /// \brief Check if the database contains a device.
-            /// \param vid : device vendor id.
-            /// \param pid : device product id.
+            /// \param ids : device HID ids.
             /// \return true if the device is present in the database, false otherwise.
-            bool hasDevice(uint16_t vid, uint16_t pid) const;
+            bool hasDevice(HidIds ids) const;
 
             /// \brief Get a Device from it's vendor ID, product ID and optional configuration tags.
             ///
-            /// Finds in the database the Device data of the corresponding vendor ID and product ID.
-            /// The Device's mappings will be set according to the database info and the variables list.
+            /// Finds in the database the Device data of the corresponding HID IDs.
+            /// The Device's mappings will be set according to the database info and the configuration tags list.
+            /// It uses an iterator to a container of C strings or std::strings.
+            /// Teplate instanciations are provided for C arrays and some STL containers of const C strings and const
+            /// std::strings.
+            /// Include DevicesDb.tpp to instanciate it with other iterators.
             ///
             /// \param vid : device vendor id.
-            /// \param pid : device product id.
-            /// \param configTags : device specific variables.
+            /// \param configTagsBegin : an iterator to a device-specific configuration tags container.
+            /// \param configTagsEnd : the end iterator.
             /// \return a Device object if found, or a dummy Device object otherwise.
-            const Device getDevice(uint16_t vid, uint16_t pid, const std::vector<std::string> configTags) const;
+            template<class ForwardIteratorType>
+            Device getDevice(HidIds ids, ForwardIteratorType configTagsBegin, ForwardIteratorType configTagsEnd) const;
 
             /// \overload getDevice
-            const Device getDevice(uint16_t vid, uint16_t pid) const;
+            Device getDevice(HidIds ids) const;
 
             /// \brief Parse data from an input stream.
             ///
-            /// Parse config data from a text input stream. Existing data will be overrided.
+            /// Parse config data from a text input stream. Existing devices data will be overrided.
             ///
             /// \param inStream : a istream providing the text input to be parsed.
             /// \param errors : a stream to write parsing errors, if any. Can be null.
@@ -53,7 +71,7 @@ namespace Lazynput
 
             /// \brief Parse data from a file.
             ///
-            /// Parse config data from a file. Existing data will be overrided.
+            /// Parse config data from a file. Existing devices data will be overrided.
             ///
             /// \param path : the path to the file.
             /// \param errors : a stream to write parsing errors, if any. Can be null.
@@ -62,7 +80,7 @@ namespace Lazynput
 
             /// \brief Parse data from the default file.
             ///
-            /// Parse config data from .lazynputdb in the home directory. Existing data will be overrided.
+            /// Parse config data from .lazynputdb in the home directory. Existing devices data will be overrided.
             ///
             /// \param path : the path to the file.
             /// \param errors : a stream to write parsing errors, if any. Can be null.

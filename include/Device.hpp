@@ -3,7 +3,7 @@
 
 #include <cstdint>
 #include <iostream>
-#include "InputTypes.hpp"
+#include "Types.hpp"
 
 namespace Lazynput
 {
