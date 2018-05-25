@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Types.hpp"
+#include "PrivateTypes.hpp"
 #include "TokenExtractor.hpp"
 #include "ErrorsWriter.hpp"
 
@@ -11,11 +11,17 @@ namespace Lazynput
     class Parser
     {
         private:
+            /// Writes parsing errors to the errors stream.
             ErrorsWriter errorsWriter;
+
+            /// Extracts tokens from the input stream.
             TokenExtractor extractor;
 
-            InterfacesDb newInterfacesDb;
-            InterfacesDb &oldInterfacesDb;
+            /// Temporary container for new devices database. Is discarded on any error encountered.
+            DevicesDb newDevicesDb;
+
+            /// Old devices database to check for redefinitions and to use previously parsed labels presets.
+            DevicesDb &oldDevicesDb;
 
             /// \brief Switch to the next state if the next token is the expected token.
             ///
@@ -62,7 +68,7 @@ namespace Lazynput
             /// \param inStream : a istream providing the text input to be parsed.
             /// \param errors : a stream to write parsing errors, if any. Can be null.
             /// \param interfacesDb : interfaces database to be updated if the stream is successfully parsed.
-            Parser(std::istream &inStream, std::ostream *errors, InterfacesDb &interfacesDb);
+            Parser(std::istream &inStream, std::ostream *errors, DevicesDb &devicesDb);
 
             /// \brief Parses the input stream
             ///

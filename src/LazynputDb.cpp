@@ -1,4 +1,4 @@
-#include "DevicesDb.hpp"
+#include "LazynputDb.hpp"
 #include "Utils.hpp"
 #include "TokenExtractor.hpp"
 #include "StrHash.hpp"
@@ -10,13 +10,13 @@ using namespace Lazynput::Litterals;
 
 namespace Lazynput
 {
-    bool DevicesDb::parseFromIstream(std::istream &inStream, std::ostream *errors)
+    bool LazynputDb::parseFromIstream(std::istream &inStream, std::ostream *errors)
     {
-        Parser parser(inStream, errors, interfacesDb);
+        Parser parser(inStream, errors, devicesDb);
         return parser.parse();
     }
 
-    bool DevicesDb::parseFromFile(const char *path, std::ostream *errors)
+    bool LazynputDb::parseFromFile(const char *path, std::ostream *errors)
     {
         std::fstream file;
         file.open(path, std::fstream::in);
@@ -31,7 +31,7 @@ namespace Lazynput
         }
     }
 
-    bool DevicesDb::parseFromDefaultFile(std::ostream *errors)
+    bool LazynputDb::parseFromDefaultFile(std::ostream *errors)
     {
         return parseFromFile(""/*Utils::getHomeDirectory()*/, errors);
     }

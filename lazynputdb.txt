@@ -90,7 +90,7 @@ interfaces
 labels
 {
     # This section provides labels that are commonly found on controllers.
-    # An inputs can have a sRGB color when it's color is distinctive.
+    # An input can have a sRGB color when it's color is distinctive.
     # Dollar names can be used for shapes and logos. The game should display the correct picture or a localized name.
     # A layout can extend another one and override some of it's parents' labels.
 

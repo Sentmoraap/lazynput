@@ -16,8 +16,8 @@ FILE(
     src/*
 )
 
-ADD_LIBRARY(Lazynput SHARED ${source_files})
-#ADD_EXECUTABLE(Lazynput ${source_files})
+#ADD_LIBRARY(Lazynput SHARED ${source_files})
+ADD_EXECUTABLE(Lazynput ${source_files})
 
 SET(CURRENT_TARGET Lazynput)
 

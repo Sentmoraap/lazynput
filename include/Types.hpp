@@ -5,7 +5,7 @@
 #include "StrHash.hpp"
 
 /// \file Types.hpp
-/// \brief Types definitions.
+/// \brief Types definitions for devices database.
 
 namespace Lazynput
 {
@@ -32,34 +32,35 @@ namespace Lazynput
         uint8_t r, g, b;
     };
 
-    /// \brief Informations about an interface's input on a specific device with specific configTags.
-    struct InputInfos
+    /// \brief Informations about an input label and color.
+    struct LabelInfos
     {
         /// True if this input has a distinctive color.
         bool hasColor : 1;
-
-        /// The type of the device's input as seen by the input library.
-        InputType inputType;
-
-        /// Index as seen by the input library.
-        uint8_t inputIndex;
 
         /// Input's color if provided, dummy value otherwise.
         Color color;
 
         /// Input's label if provided, can be null.
         const char *label;
+    };
+
+    /// \brief Informations about an interface's input on a specific device with specific configTags.
+    struct InputInfos
+    {
+        /// The type of the device's input as seen by the input library.
+        InputType inputType;
+
+        /// Index as seen by the input library.
+        uint8_t inputIndex;
+
+        /// Label and color.
+        LabelInfos labelInfos;
 
         /// \brief Check if the InputInfos corresponds to a real database entry or is a dummy one.
         /// \return true if it's a real device, false if it's a dummy one.
         operator bool() const;
     };
-
-    /// \brief (name, type) hash map to store an interface definition.
-    using Interface = StrHashMap<InputType>;
-
-    /// \brief (name, interface) hash map to store all interfaces definitions.
-    using InterfacesDb = StrHashMap<Interface>;
 }
 
 namespace std

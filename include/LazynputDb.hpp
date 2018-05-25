@@ -5,22 +5,22 @@
 #include <vector>
 #include "Device.hpp"
 #include "Types.hpp"
+#include "PrivateTypes.hpp"
 #include "StrHash.hpp"
 
 namespace Lazynput
 {
-    /// \class DevicesDb
+    /// \class LazynputDb
+    ///
     /// \brief Main database container and parser.
     ///
     /// This class contains all the database info.
     /// Use it to parse a config file and get the Devices info.
-    class DevicesDb
+    class LazynputDb
     {
         private:
-            /// Interface definitions.
-            InterfacesDb interfacesDb;
-
-            //std::unordered_map<HidIds, DeviceConfigData> devices;
+            /// Devices database.
+            DevicesDb devicesDb;
 
         public:
             /// \brief Set variables that apply to every device.
