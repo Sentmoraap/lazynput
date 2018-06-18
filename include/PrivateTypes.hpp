@@ -1,6 +1,7 @@
 #pragma once
 
 #include <utility>
+#include <vector>
 #include <cstdint>
 #include "Types.hpp"
 #include "StrHash.hpp"
@@ -42,6 +43,28 @@ namespace Lazynput
     /// \brief (name, labeld) hash map to store all labels presets.
     using LabelsDb = StrHashMap<Labels>;
 
+    /// \brief Internal struct to store device data
+    struct DeviceData
+    {
+        /// Inherited data.
+        HidIds parent;
+
+        /// Device name.
+        std::string name;
+
+        /// Implemented interfaces, in increasing hash order
+        std::vector<StrHash> interfaces;
+
+        /// Used labels presets. Last overrides first.
+        std::vector<StrHash> presetsLabels;
+
+        /// Own labels.
+        StrHashMap<LabelInfosPrivate> ownLabels;
+    };
+
+    /// \brief (name, labeld) hash map to store all devices data.
+    using DevicesDataDb = std::unordered_map<HidIds, DeviceData, HidIdsIdentity>;
+
     /// \brief Complete devices database.
     /// This struct contains all the data needed to get a Device with given config tags.
     struct DevicesDb
@@ -51,5 +74,8 @@ namespace Lazynput
 
         /// Labels presets.
         LabelsDb labels;
+
+        /// Devices data.
+        DevicesDataDb devices;
     };
 }

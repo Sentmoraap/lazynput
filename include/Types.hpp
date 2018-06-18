@@ -10,12 +10,36 @@
 namespace Lazynput
 {
     /// \brief IDs used in the HID specification.
-    struct HidIds
+    struct alignas(4) HidIds
     {
         /// \param pid : device vendor id.
         uint16_t vid;
         /// \param vid : device product id.
         uint16_t pid;
+
+        constexpr bool operator ==(const HidIds &oth)
+        {
+            return vid == oth.vid && pid == oth.pid;
+        }
+
+        constexpr bool operator !=(const HidIds &oth)
+        {
+            return !(*this == oth);
+        }
+
+        /// Value to represent no device.
+        static const HidIds invalid;
+    };
+
+    /// \class HidIdIdentity
+    /// \brief Identity hash function to use directly HidIds in unordered_maps.
+    class HidIdsIdentity
+    {
+        public:
+            constexpr uint32_t operator()(HidIds ids)
+            {
+                return ids.vid << 16 | ids.pid;
+            }
     };
 
     /// \brief A device's input type.

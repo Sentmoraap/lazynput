@@ -63,7 +63,7 @@ interfaces
         btn:
         c z
         l3 l4 r3 r4
-        guide capture
+        home capture
     }
 
     # This interface can be used for devices that provides motion controls.
@@ -114,7 +114,7 @@ labels
     ps3 : ps1
     {
         extended_gamepad:
-        guide   "$PS_LOGO"
+        home    "$PS_LOGO"
     }
 
     snes
@@ -157,7 +157,7 @@ devices
             # LT & RT refers to the Xbox 360 triggers and avoid confusion.
             l3      "LT"
             r3      "RT"
-            guide   "Mode"
+            home    "Mode"
         }
         # This mapping assumes the controller is in 6 axis mode.
         default:
@@ -169,7 +169,7 @@ devices
     044f.b324 : 044f.b323
     {
         # Same controller in PS3 mode
-        default: guide=b12
+        default: home=b12
     }
 
     0583.2060

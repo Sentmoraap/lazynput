@@ -54,14 +54,18 @@ namespace Lazynput
             /// \return true if successfully parsed, false otherwise.
             bool parseLabelsBlock();
 
-            /// \brief Parse a devices block from input stream.
+            /// \brief Parses a devices block from input stream.
             ///
             /// Parse devices data from a text input stream. Existing data will be overrided.
             ///
-            /// \param inStream : a istream providing the text input to be parsed.
-            /// \param errors : a stream to write parsing errors, if any. Can be null.
             /// \return true if successfully parsed, false otherwise.
             bool parseDevicesBlock();
+
+            /// \brief Parses a labels definition block.
+            /// \param interfaces : sorted vector containing interfaces to look for, or nullptr for a preset definition.
+            /// \param labels : hashmap to be filled. Can be modified even if the parsing fails.
+            /// \return true if successfully parsed, false otherwise.
+            bool parseLabelsBlock(const std::vector<StrHash> *interfaces, StrHashMap<LabelInfosPrivate> &labels);
 
         public:
             /// \brief Constructs and initializes the parser.
