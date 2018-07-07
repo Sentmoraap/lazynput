@@ -43,6 +43,16 @@ namespace Lazynput
     /// \brief (name, labeld) hash map to store all labels presets.
     using LabelsDb = StrHashMap<Labels>;
 
+    /// \brief Store one input mapping for one config tag (or none).
+    struct InputData
+    {
+        /// The type of the device's input as seen by the input library.
+        InputType inputType;
+
+        /// Index as seen by the input library.
+        uint8_t inputIndex;
+    };
+
     /// \brief Internal struct to store device data
     struct DeviceData
     {
@@ -60,6 +70,9 @@ namespace Lazynput
 
         /// Own labels.
         StrHashMap<LabelInfosPrivate> ownLabels;
+
+        /// Bindings, outer map is config tag, inner map is interface.input.
+        StrHashMap<StrHashMap<BindingInfos>> bindings;
     };
 
     /// \brief (name, labeld) hash map to store all devices data.

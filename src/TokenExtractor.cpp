@@ -113,4 +113,10 @@ namespace Lazynput
             }
         }
     }
+
+    bool TokenExtractor::isNextTokenStuck()
+    {
+        char next = inStream.peek();
+        return next != ' ' && next != '\n';
+    }
 }

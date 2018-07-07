@@ -46,8 +46,20 @@ namespace Lazynput
     enum class InputType : uint8_t
     {
         BUTTON,
+        HAT,
         ABSOLUTE_AXIS,
         RELATIVE_AXIS
+    };
+
+
+    /// \brief Additional input informations.
+    struct InputOptions
+    {
+        /// True if inverted or negative part.
+        bool invert : 1;
+
+        /// False for full axis, true for half axis.
+        bool half : 1;
     };
 
     /// \brief sRGB color.
@@ -69,14 +81,23 @@ namespace Lazynput
         const char *label;
     };
 
+    struct BindingInfos
+    {
+        /// The type of the device's input as seen by the input library.
+        InputType type;
+
+        /// Index as seen by the input library. For hat switches, is index * 2, + 1 for the y axis.
+        uint8_t index;
+
+        /// Input options
+        InputOptions options;
+    };
+
     /// \brief Informations about an interface's input on a specific device with specific configTags.
     struct InputInfos
     {
-        /// The type of the device's input as seen by the input library.
-        InputType inputType;
-
-        /// Index as seen by the input library.
-        uint8_t inputIndex;
+        /// Real input to use as seen by the input libraty.
+        BindingInfos binding;
 
         /// Label and color.
         LabelInfos labelInfos;

@@ -26,7 +26,7 @@ namespace Lazynput
             /// \brief Switch to the next state if the next token is the expected token.
             ///
             /// Check if the next token is an opening brace or a new line.
-            /// Updates the state if the next token
+            /// Updates the state if the next token.
             /// Generates an error if the next token is not the expected token nor a newline.
             ///
             /// \param state : will be updated if the conditions are met.
@@ -35,9 +35,31 @@ namespace Lazynput
             /// \param token : next token.
             /// \param nextState : updated value of state if the conditions are met.
             ///
-            /// \return : true if there are not errors, false orherwise
+            /// \return true if there are not errors, false orherwise
             bool expectToken(uint8_t *state, StrHash hash, StrHash expectedHash, const std::string &token,
                 uint8_t nextState);
+
+            /// \brief Returns the newest interface if it exists or nullprt.
+            ///
+            /// Checks if the interface exists in either newDevicesDb and oldDevicesDb. Returns in priority the once
+            /// in newDevicesDb. It it does not exist in any database, returns nullptr.
+            ///
+            /// \param hash : the interface's hash to look for.
+            ///
+            /// \return found interface or nullptr
+            Interface *getInterface(StrHash hash);
+
+            /// \brief Returns the interface containing the input, or ""_hash.
+            ///
+            /// Checks if the input belongs to one and only one interface in interfaces. If so, returns it.
+            /// If not, it prints an error and returns {""_hash, nullptr}.
+            ///
+            /// \param interfaces : interfaces to check.
+            /// \param inputHash : input to look for in the interfaces.
+            /// \param inputStr : input name to print in the error.
+            /// \return the interface hash, or {""_hash, nullptr}.
+            std::pair<StrHash, Interface*> getInputInterface(const std::vector<StrHash> &interfaces,
+                    StrHash inputHash, const std::string &inputStr);
 
             /// \brief Parse an interfaces block.
             ///
@@ -61,11 +83,18 @@ namespace Lazynput
             /// \return true if successfully parsed, false otherwise.
             bool parseDevicesBlock();
 
+            /// \brief Parses a binding definition.
+            ///
+            /// Parse an input binding. The function ends when it encounters a space.
+            ///
+            /// \return true if successfully parsed, false otherwise.
+            bool parseBindingInput(BindingInfos &binding);
+
             /// \brief Parses a labels definition block.
             /// \param interfaces : sorted vector containing interfaces to look for, or nullptr for a preset definition.
             /// \param labels : hashmap to be filled. Can be modified even if the parsing fails.
             /// \return true if successfully parsed, false otherwise.
-            bool parseLabelsBlock(const std::vector<StrHash> *interfaces, StrHashMap<LabelInfosPrivate> &labels);
+            bool parseLabelsSubBlock(const std::vector<StrHash> *interfaces, StrHashMap<LabelInfosPrivate> &labels);
 
         public:
             /// \brief Constructs and initializes the parser.

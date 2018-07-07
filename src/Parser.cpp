@@ -26,6 +26,44 @@ namespace Lazynput
         }
     }
 
+    Interface *Parser::getInterface(StrHash hash)
+    {
+        if(newDevicesDb.interfaces.count(hash))
+        {
+            return &newDevicesDb.interfaces.at(hash);
+        }
+        else if(oldDevicesDb.interfaces.count(hash))
+        {
+            return &oldDevicesDb.interfaces.at(hash);
+        }
+        else return nullptr;
+    }
+
+    std::pair<StrHash, Interface*>  Parser::getInputInterface(const std::vector<StrHash> &interfaces,
+            StrHash inputHash, const std::string &inputStr)
+    {
+        std::pair<StrHash, Interface*> ret = std::make_pair(StrHash(), nullptr);
+        for(StrHash hash : interfaces)
+        {
+            Interface *interface = getInterface(hash);
+            if(interface->count(inputHash))
+            {
+                if(ret.first == StrHash()) ret = std::make_pair(hash, interface);
+                else
+                {
+                    errorsWriter.error("input " + inputStr + " belongs to several"
+                            " interfaces");
+                    return std::make_pair(StrHash(), nullptr);
+                }
+            }
+        }
+        if(ret.first == StrHash())
+        {
+            errorsWriter.error("input " + inputStr + " does not belong to any interface");
+        }
+        return ret;
+    }
+
     bool Parser::parseInterfacesBlock()
     {
         enum : uint8_t {START, INSIDE_BLOCK, INTERFACE_START, INSIDE_INTERFACE, INPUT_TYPE_COLON} state = START;
@@ -231,7 +269,7 @@ namespace Lazynput
                     switch(hash)
                     {
                         case "{"_hash:
-                            if(!parseLabelsBlock(nullptr, newLabels.map)) return false;
+                            if(!parseLabelsSubBlock(nullptr, newLabels.map)) return false;
                             newDevicesDb.labels[labelsHash] = std::move(newLabels);
                             state = INSIDE_BLOCK;
                             break;
@@ -268,7 +306,7 @@ namespace Lazynput
                         case "\n"_hash:
                             break;
                         case "{"_hash:
-                            if(!parseLabelsBlock(nullptr, newLabels.map)) return false;
+                            if(!parseLabelsSubBlock(nullptr, newLabels.map)) return false;
                             newDevicesDb.labels[labelsHash] = std::move(newLabels);
                             state = INSIDE_BLOCK;
                             break;
@@ -286,12 +324,15 @@ namespace Lazynput
     {
         enum : uint8_t {START, INSIDE_BLOCK, AFTER_VID, EXPECT_PID, AFTER_PID, EXPECT_PARENT_VID, AFTER_PARENT_VID,
                 EXPECT_PARENT_PID, AFTER_INHERITANCE, INSIDE_DEVICE, EXPECT_NAME, EXPECT_INTERFACE, EXPECT_LABELS,
-                EXPECT_EQUALS,  END_OF_LINE}
+                TAG_OR_INPUT, END_TAG_OR_INPUT, EXPECT_INPUT, EXPECT_EQUALS, END_OF_LINE}
                 state = START, nextState;
-        StrHash hash;
-        std::string token;
+        StrHash hash, prevHash, inputHash;
+        std::string token, prevToken;
+        StrHashMap<BindingInfos> *tagMap;
+        std::vector<StrHash> deviceInterfaces;
         DeviceData device;
         HidIds ids, parentIds;
+        Interface *interface;
         bool nameDefined, interfacesDefined, labelsDefined;
         while(extractor.getNextToken(hash, &token))
         {
@@ -349,6 +390,7 @@ namespace Lazynput
                             return false;
                         }
                         device = DeviceData();
+                        deviceInterfaces.clear();
                         nameDefined = false;
                         interfacesDefined = false;
                         labelsDefined = false;
@@ -414,6 +456,24 @@ namespace Lazynput
                             return false;
                         }
                         device.parent = parentIds;
+                        HidIds parentIds = device.parent;
+                        // Construct list of all implemented interfaces, own ones and inherited ones.
+                        while(parentIds != HidIds::invalid)
+                        {
+                            DeviceData &parent =
+                                    (newDevicesDb.devices.count(parentIds) ? newDevicesDb : oldDevicesDb)
+                                    .devices[parentIds];
+                            parentIds = parent.parent;
+                            std::vector<StrHash>::iterator it = deviceInterfaces.begin(),
+                                    parentIt = parent.interfaces.begin();
+                            while(parentIt != parent.interfaces.end())
+                            {
+                                while(it != deviceInterfaces.end() && *it < *parentIt) it++;
+                                if(it == deviceInterfaces.end() || *it != *parentIt)
+                                        deviceInterfaces.insert(it, *parentIt);
+                                parentIt++;
+                            }
+                        }
                         state = AFTER_INHERITANCE;
                     }
                     break;
@@ -458,6 +518,13 @@ namespace Lazynput
                             state = EXPECT_EQUALS;
                             nextState = EXPECT_LABELS;
                             break;
+                        case "default"_hash:
+                            extractor.getNextToken(hash, &token);
+                            tagMap = &device.bindings[""_hash];
+
+                            if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, ":"_hash, token, TAG_OR_INPUT))
+                                return false;
+                            break;
                         case "}"_hash:
                             newDevicesDb.devices[ids] = std::move(device);
                             state = INSIDE_BLOCK;
@@ -501,14 +568,14 @@ namespace Lazynput
                                 errorsWriter.unexpectedTokenError(token);
                                 return false;
                             }
-                            std::vector<StrHash>::iterator it = std::lower_bound(device.interfaces.begin(),
-                                    device.interfaces.end(), hash);
-                            if(!newDevicesDb.interfaces.count(hash) && !oldDevicesDb.interfaces.count(hash))
+                            if(!getInterface(hash))
                             {
                                 errorsWriter.error("unknwon interface " + token);
                                 return false;
                             }
-                            else if(it == device.interfaces.end()) device.interfaces.push_back(hash);
+                            std::vector<StrHash>::iterator it = std::lower_bound(device.interfaces.begin(),
+                                    device.interfaces.end(), hash);
+                            if(it == device.interfaces.end()) device.interfaces.push_back(hash);
                             else if(*it == hash)
                             {
                                 errorsWriter.error("multiple definition of the interface " + token
@@ -516,6 +583,9 @@ namespace Lazynput
                                 return false;
                             }
                             else device.interfaces.insert(it, hash);
+                            it = std::lower_bound(deviceInterfaces.begin(),
+                                    deviceInterfaces.end(), hash);
+                            if(it == deviceInterfaces.end() || *it != hash) deviceInterfaces.insert(it, hash);
                         }
                         break;
                     }
@@ -548,7 +618,7 @@ namespace Lazynput
                                 if(newDevicesDb.devices.count(d->parent)) d = &newDevicesDb.devices[d->parent];
                                 else d = &oldDevicesDb.devices[d->parent];
                             }
-                            if(!parseLabelsBlock(&d->interfaces, device.ownLabels)) return false;
+                            if(!parseLabelsSubBlock(&deviceInterfaces, device.ownLabels)) return false;
                             state = END_OF_LINE;
                             nextState = INSIDE_DEVICE;
                             break;
@@ -569,6 +639,85 @@ namespace Lazynput
                             break;
                     }
                     break;
+                case TAG_OR_INPUT:
+                    switch(hash)
+                    {
+                        case "\n"_hash:
+                            break;
+                        case "}"_hash:
+                            newDevicesDb.devices[ids] = std::move(device);
+                            state = INSIDE_BLOCK;
+                            break;
+                        default:
+                            if(!Utils::isNameCharacter(token[0]))
+                            {
+                                errorsWriter.unexpectedTokenError(token);
+                                return false;
+                            }
+                            prevHash = hash;
+                            prevToken = token;
+                            state = END_TAG_OR_INPUT;
+                            break;
+                    }
+                    break;
+                case END_TAG_OR_INPUT:
+                    switch(hash)
+                    {
+                        case ":"_hash: // The previous token should be a config tag.
+                            tagMap = &device.bindings[prevHash];
+                            state = TAG_OR_INPUT;
+                            break;
+                        case "."_hash: // The previous token should be an interface.
+                            if(std::find(device.interfaces.begin(), device.interfaces.end(), prevHash)
+                                    == device.interfaces.end())
+                            {
+                                errorsWriter.error("device does not implement interface " + prevToken);
+                                return false;
+                            }
+                            interface = getInterface(prevHash);
+                            state = EXPECT_INPUT;
+                            break;
+                        case "="_hash: // The previous token should be an input.
+                            std::tie(prevHash, interface) = getInputInterface(deviceInterfaces, prevHash, prevToken);
+                            if(prevHash == StrHash()) return false;
+                            prevHash.hashCharacter('.');
+                            for(const char *c = prevToken.c_str(); *c; c++) prevHash.hashCharacter(*c);
+                            if(tagMap->count(prevHash))
+                            {
+                                errorsWriter.error("input defined multiple times for the same config tag");
+                                return false;
+                            }
+                            if(!parseBindingInput((*tagMap)[prevHash])) return false;
+                            state = TAG_OR_INPUT;
+                            break;
+                        default:
+                            errorsWriter.unexpectedTokenError(token);
+                            return false;
+                    }
+                    break;
+                case EXPECT_INPUT:
+                    if(!Utils::isNameCharacter(token[0]))
+                    {
+                        errorsWriter.unexpectedTokenError(token);
+                        return false;
+                    }
+                    if(!interface->count(hash))
+                    {
+                        errorsWriter.error("unknown input " + token + " in interface " + prevToken);
+                        return false;
+                    }
+                    prevHash.hashCharacter('.');
+                    for(const char *c = prevToken.c_str(); *c; c++) prevHash.hashCharacter(*c);
+                    if(tagMap->count(prevHash))
+                    {
+                        errorsWriter.error("input defined multiple times for the same config tag");
+                        return false;
+                    }
+                    if(expectToken(reinterpret_cast<uint8_t*>(&state), hash, "="_hash, token, nextState))
+                        return false;
+                    if(!parseBindingInput((*tagMap)[prevHash])) return false;
+                    state = TAG_OR_INPUT;
+                    break;
                 case EXPECT_EQUALS:
                     if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "="_hash, token, nextState))
                         return false;
@@ -577,14 +726,84 @@ namespace Lazynput
                     if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "\n"_hash, token, nextState))
                         return false;
                     break;
-                default:
-                    return false;
             }
         }
         return false;
     }
 
-    bool Parser::parseLabelsBlock(const std::vector<StrHash> *interfaces, StrHashMap<LabelInfosPrivate> &labels)
+    bool Parser::parseBindingInput(BindingInfos &binding)
+    {
+        enum : uint8_t {MAY_INVERT, INPUT, AXIS_HALF, END} state = MAY_INVERT;
+        StrHash hash;
+        std::string token;
+        binding.options.half = false;
+        binding.options.invert = false;
+        while(extractor.isNextTokenStuck() && extractor.getNextToken(hash, &token))
+        {
+            switch(state)
+            {
+                case MAY_INVERT:
+                    if(hash == "~"_hash)
+                    {
+                        binding.options.invert = true;
+                        state = INPUT;
+                        break;
+                    }
+                // Fallthrough
+                case INPUT:
+                    switch(token[0])
+                    {
+                        case 'a':
+                            binding.type = InputType::ABSOLUTE_AXIS;
+                            state = binding.options.invert ? END : AXIS_HALF;
+                            break;
+                        case 'b':
+                            binding.type = InputType::BUTTON;
+                            state = END;
+                            break;
+                        case 'h':
+                            binding.type = InputType::HAT;
+                            state = binding.options.invert ? END : AXIS_HALF;
+                            break;
+                        case 'r':
+                            binding.type = InputType::RELATIVE_AXIS;
+                            state = binding.options.invert ? END : AXIS_HALF;
+                            break;
+                        default:
+                            errorsWriter.unexpectedTokenError(token);
+                            return false;
+                    }
+                    break;
+                case AXIS_HALF:
+                    switch(token[0])
+                    {
+                        case '+':
+                            binding.options.half = true;
+                            break;
+                        case '-':
+                            binding.options.invert = true;
+                            binding.options.half = true;
+                            break;
+                        default:
+                            errorsWriter.unexpectedTokenError(token);
+                            return false;
+                    }
+                    state = END;
+                    break;
+                case END:
+                    errorsWriter.unexpectedTokenError(token);
+                    return false;
+            }
+        }
+        if(state < AXIS_HALF)
+        {
+            errorsWriter.error("binding not complete");
+            return false;
+        }
+        else return true;
+    }
+
+    bool Parser::parseLabelsSubBlock(const std::vector<StrHash> *interfaces, StrHashMap<LabelInfosPrivate> &labels)
     {
         enum : uint8_t {LINE_START, LINE_NAME, LINE_2ND_TOKEN, LINE_COLOR, LINE_END} state = LINE_START;
         StrHash hash, labelsHash, lineHash, interfaceHash;
@@ -639,15 +858,8 @@ namespace Lazynput
                                 errorsWriter.unexpectedTokenError(token);
                                 return false;
                             }
-                            if(newDevicesDb.interfaces.count(lineHash))
-                            {
-                                interface = &newDevicesDb.interfaces.at(lineHash);
-                            }
-                            else if(oldDevicesDb.interfaces.count(lineHash))
-                            {
-                                interface = &oldDevicesDb.interfaces.at(lineHash);
-                            }
-                            else
+                            interface = getInterface(lineHash);
+                            if(!interface)
                             {
                                 errorsWriter.error("unknwon interface " + token);
                                 return false;
@@ -661,17 +873,10 @@ namespace Lazynput
                                 errorsWriter.unexpectedTokenError(token);
                                 return false;
                             }
-                            if(newDevicesDb.interfaces.count(lineHash))
+                            interface = getInterface(lineHash);
+                            if(!interface)
                             {
-                                interface = &newDevicesDb.interfaces.at(lineHash);
-                            }
-                            else if(oldDevicesDb.interfaces.count(lineHash))
-                            {
-                                interface = &oldDevicesDb.interfaces.at(lineHash);
-                            }
-                            else
-                            {
-                                errorsWriter.error("unknwon interface " + lineName);
+                                errorsWriter.error("unknwon interface " + token);
                                 return false;
                             }
                             interfaceHash = lineHash;
@@ -686,39 +891,10 @@ namespace Lazynput
                             }
                             if(interfaces)
                             {
-                                if(interface)
+                                if(!interface)
                                 {
-
-                                }
-                                else
-                                {
-                                    interfaceHash = StrHash();
-                                    for(StrHash hash : *interfaces)
-                                    {
-                                        if(newDevicesDb.interfaces.count(hash))
-                                        {
-                                            interface = &newDevicesDb.interfaces.at(hash);
-                                        }
-                                        else if(oldDevicesDb.interfaces.count(hash))
-                                        {
-                                            interface = &oldDevicesDb.interfaces.at(hash);
-                                        }
-                                        if(interface->count(lineHash))
-                                        {
-                                            if(interfaceHash == StrHash()) interfaceHash = hash;
-                                            else
-                                            {
-                                                errorsWriter.error("label " + lineName + " belongs to several"
-                                                        " interfaces");
-                                                return false;
-                                            }
-                                        }
-                                    }
-                                    if(interfaceHash == StrHash())
-                                    {
-                                        errorsWriter.error("label " + lineName + " does not belong to any interface");
-                                        return false;
-                                    }
+                                    interfaceHash = getInputInterface(*interfaces, lineHash, lineName).first;
+                                    if(interfaceHash == StrHash()) return false;
                                 }
 
                             }

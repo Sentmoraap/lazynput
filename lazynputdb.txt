@@ -144,8 +144,7 @@ devices
 
     # If a device needs different mappings depending on the operating system, driver version or some other parameters,
     # it can provide overrides depending on the parameters.
-    # They can also be nested if needed.
-    # There are no examples in this list yet.
+    # Nesting and combinaisons may be supported in future versions if needed.
 
     044f.b323
     {
@@ -177,6 +176,6 @@ devices
         name = "iBuffalo Classic USB Gamepad"
         labels = snes
         interfaces = basic_gamepad
-        default: dpx=a0 dpy=a1 sa=b1 b=b0 x=b3 y=b2 l1=b4 r1=b5 select=b6 start=b7
+        default: dpx=a0 dpy=a1 a=b1 b=b0 x=b3 y=b2 l1=b4 r1=b5 select=b6 start=b7
     }
 }

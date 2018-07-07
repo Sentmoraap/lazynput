@@ -28,7 +28,11 @@ namespace Lazynput
             /// \brief Extracts a token
             /// \param hash : will be set to the token's hash.
             /// \param token : a string to contain the extracted token. Can be null.
-            /// \return value : true if a token is extracted without errors, false otherwise.
+            /// \return true if a token is extracted without errors, false otherwise.
             bool getNextToken(StrHash &hash, std::string *token);
+
+            /// \brief Checks if the next token start immediatly at next character
+            /// \return true if there is a next token and it starts at next character.
+            bool isNextTokenStuck();
     };
 }
