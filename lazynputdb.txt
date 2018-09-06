@@ -70,17 +70,17 @@ interfaces
     motion_controls
     {
         abs:
-        accelx
-        accely
-        accelz
+        accelx        # Towards the right
+        accely        # Towards the screen
+        accelz        # Towards the sky
         magx
         magy
         magz
 
         rel:
-        gyrox
-        gyroy
-        gyroz
+        gyrox        # Rotates around the player-screen axis
+        gyroy        # Rotates around the left-right axis
+        gyroz        # Rotates around the ground-sky axis
     }
 
     # Possible future additions:
@@ -117,6 +117,13 @@ labels
         home    "$PS_LOGO"
     }
 
+    ps4 : ps3
+    {
+        select  "$TOUCHPAD"
+        start   "Options"
+        capture "Share"
+    }
+
     snes
     {
         basic_gamepad:
@@ -128,6 +135,46 @@ labels
         r1      "R"
         select  "Select"
         start   "Start"
+    }
+
+    xbox_base
+    {
+        basic_gamepad:
+        a        "A"            87D639
+        b        "B"            BF3030
+        x        "X"            4296F3
+        y        "Y"            EEB136
+    }
+
+    xbox
+    {
+        basic_gamepad:
+        c        nil            000000
+        z        nil            FFFFFF
+        select    "Back"
+        start    "Start"
+    }
+
+    xbox_360 : xbox_base
+    {
+        basic_gamepad:
+        l1        "LB"
+        r1        "RB"
+        l2        "LT"
+        r2        "RT"
+        ls        "LS"
+        rs        "RS"
+        select    "Back"
+        start    "Start"
+
+        extended_gamepad:
+        home    "$XBOX_LOGO"
+    }
+
+    xbox_one : xbox_360
+    {
+        select    "$XBOX_VIEW"
+        start    "$HAMBURGER_MENU"
     }
 }
 
@@ -144,38 +191,437 @@ devices
 
     # If a device needs different mappings depending on the operating system, driver version or some other parameters,
     # it can provide overrides depending on the parameters.
-    # Nesting and combinaisons may be supported in future versions if needed.
+    # They can also be nested if needed.
+    # There are no examples in this list yet.
 
-    044f.b323
+    # A lot of this data came from internet researches.  There may be some mistakes.
+
+    # Vendor ID 044f : Thrustmaster
+    044f.044f : 045e.028e
     {
-        name = "Thrustmaster Dual Trigger 3-in-1 Rumble Force"
+        name = "Thrustmaster GP XID"
+        labels =
+        {
+            home "TM"
+        }
+    }
+
+    # 044f.0f07 : can it just inherit the original xbox controller ?
+
+    044f.a003 : 044f.a0a3
+    {
+        name = "Thrustmaster Rage 3D Digital PC Game pad"
+        labels=
+        {
+            a "A", b "B", c "C", x "X", y "Y", z "Z"
+            select "Select", start "Start"
+        }
+    }
+
+    044f.a0a3
+    {
+        name = "Thrustmaster Fusion Digital gamepad"
+        interfaces = basic_gamepad extended_gamepad
+        default:
+            lsx=a0 lsy=a1
+            a=b0 b=b1 c=b2 x=b3 y=b4 z=b5 start=b6 select=b7 l1=b8 r1=b9
+    }
+
+    044f.b300
+    {
+        name = "Thrustmaster FireStorm Dual Power"
+        interfaces = basic_gamepad extended_gamepad
+
+        default:
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a3
+            a=b0 b=b2 x=b1 y=b3 l1=b4 r1=b6 l2=b5 r2=b7 l3=b9 r3=b10
+            ls=b11 rs=b12 home=b8
+    }
+
+    044f.b303 : 044f.b300
+    {
+        name = "Thrustmaster FireStorm Dual Analog 2"
+        interfaces = basic_gamepad extended_gamepad
+        default:
+            l3=b8 r3=b9 ls=b10 rs=b11 home=nil
+    }
+
+    044f.b304 : 044f.b303
+    {
+        name = "Thrustmaster FireStorm Dual Power 3"
+    }
+
+    #044f.b307 "Vibrating Upad" May be this.
+    #{
+    #    name = "Thrustmaster 360 Modena Upad Force"
+    #    interfaces = basic_gamepad
+    #    default:
+    #        dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a3
+    #        a=b0 b=b2 x=b1 y=b3 l1=b4 l2=b5 r1=b6 r1= select=b8 start=b9
+    #        ls=b10 rs=b11
+    #}
+
+    # 044d.b30b Wireless VibrationPad. T-Wireless ?
+
+    044f.b315 : 044f.b303
+    {
+        # This product ID corresponds to several Thrustmaster Dual Analog
+        # controllers.
+        # Start and select may be an extra pair of triggers.
+        name = "Thrustmaster FireStorm Dual Analog"
+        interfaces = basic_gamepad
+        labels =
+        {
+            # Most models don't have labels, but the Dual Analog 4 have ones
+            l1 "L1", l2 "L2", r1 "R1", r2 "R2"
+        }
+        default:
+            select=b8 start=b9 # l3=nil r3=nil
+    }
+
+    044f.b320
+    {
+        name = "Thrustmaster Dual Trigger 2-in-1"
         interfaces = basic_gamepad extended_gamepad
         labels = ps1 +
         {
             # L3 and R3 refers to the joystick clicks on Playstation controllers.
-            # LT & RT refers to the Xbox 360 triggers and avoid confusion.
-            l3      "LT"
-            r3      "RT"
-            home    "Mode"
+            # The triggers are not labeled.
+            l3 nil, r3 nil, home "Mode"
         }
-        # This mapping assumes the controller is in 6 axis mode.
+        # This mapping assumes the controller is in 6 axis modYe.
         default:
             dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a5
             a=b1 b=b2 x=b0 y=b3 l1=b4 r1=b5 l2=b6 r2=b7 l3=~a3 r3=~a4
             ls=b10 rs=b11 select=b8 start=b9
     }
 
-    044f.b324 : 044f.b323
+    044f.b323 : 044f.b320
     {
-        # Same controller in PS3 mode
+        name = "Thrustmaster Dual Trigger 3-in-1 Rumble Force"
+    }
+
+    044f.b324 : 044f.b320
+    {
+        # 044f.b323 in PS3 mode
         default: home=b12
     }
 
+    044f.b326 : 044f.044f {}
+
+    044f.d003
+    {
+        name = "Thrustmaster Run'N' Drive 3 in 1 Rumble Force"
+        interfaces = basic_gamepad extended_gamepad extra
+        labels = ps1 +
+        {
+            # L3 and R3 are on the back of the controller and are labeled L2 and R2.
+            # L2 and R2 are not labeled.
+            l2 nil, r2 nil, l3 "L2", r3 "R2"
+            home "$HOME"
+        }
+
+        # This mapping assumes the controller is in 6 axis mode.
+        default:
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a5
+            a=b1 b=b2 x=b0 y=b3 l1=b4 r1=b5 l2=~a3 r2=~a4 l3=b6 r3=b7
+            ls=b10 rs=b11 select=b8 start=b9 a0=a6
+    }
+
+    # 044f.d007 : T-Wireless
+
+    044f.d008 : 044f.d003
+    {
+        name = "Thrustmaster Run'N' Drive Wireless 3 in 1 Rumble Force"
+    }
+
+    044f.d009 : 044f.d008
+    {
+        # 044f.d008 in PS3 mode
+        default: home=b12
+    }
+
+    # Could not find data for T-Mini and T-Wireless models.
+
+    # Vendor ID 045e : Microsoft
+    045e.000e
+    {
+        name = "Microsoft SideWinder Freestyle Pro"
+        interfaces = basic_gamepad extended_gamepad motion_controls
+        labels =
+        {
+            a "A", b "B", c "C", x "X", y "Y", z "Z"
+            select "$SHIFT", start "Start"
+        }
+        # This mapping assumes the controller is in analogue mod (green LED)
+        default:
+            dpx=h0x dpy=h0y accelx=a0 accely=a1
+            a=b0 b=b1 c=b2 x=b3 y=b4 z=b5
+            l1=b6 r1=b7 start=b8 select=b9
+            a0=a2 # A throttle wheel.
+    }
+
+    045e.0202
+    {
+        name = "Xbox controller"
+        interfaces = basic_gamepad extended_gamepad
+        labels = xbox
+        default:
+            dpx=h0x dpy=h0y lx=a0 ly=a1 rx=a3 ry=a4
+            a=b0 b=b1 c=b2 x=b3 y=b4 z=b5 l1=a2 r1=a5
+            ls=b8 rs=b9 select=b6 start=b7
+    }
+
+    045e.0285 : 045e.0202
+    {
+        name = "Xbox controller S"
+    }
+
+    045e.0289 : 045e.0285 {}
+
+    045e.028e
+    {
+        name = "Xbox 360 controller"
+        interfaces = basic_gamepad extended_gamepad
+        labels = xbox_360
+        default:
+            dpx=h0x dpy=h0y lx=a0 ly=a1 rx=a3 ry=a4
+            a=b0 b=b1 x=b2 y=b3 l1=b4 r1=b5 l2=a2 r2=a5
+            ls=b9 rs=b10 select=b6 start=b7 home=b8
+    }
+
+    045e.0291 : 045e.028e
+    {
+        name = "Xbox 360 wireless controller"
+    }
+
+    045e.02a1 : 045e.0291 {}
+
+    045e.02d1 : 045e.028e
+    {
+        name = "Xbox One Controller"
+        labels = xbox_one
+    }
+
+    045e.02dd : 045e.02d1 {}
+
+    045e.02e0 : 045e.02d1
+    {
+        name = "Xbox One Wireless Controller"
+        default: ls=b8 rs=b9 home=b10
+    }
+
+    045e.02e3 : 045e.02d1
+    {
+        name = "Xbox One Elite Controller"
+    }
+
+    045e.02ea : 045e.02e0
+    {
+        default: ls=b6 rs=b7 select=b9 start=b8 home=b10
+    }
+
+    045e.02fd
+    {
+        name = "Xbox One Wireless Controller"
+        interfaces = basic_gamepad extended_gamepad
+        default:
+            dpx=h0x dpy=h0y lx=a0 ly=a1 rx=a2 ry=a3
+            a=b0 b=b1 x=b3 y=b4
+            l1=b6 l2=a5 r1=b7 r2=a4
+            ls=b13 rs=b14 select=b15 start=b11 home=b16
+    }
+
+    045e.0719 : 045e.0291 {}
+
+    # Vendor ID 046d : Logitech
+    046d.0242 : 045e.028e
+    {
+        name = "Logitech ChillStream"
+    }
+
+    046d.c208 : 046d.c209
+    {
+        name = "Logitech WingMan Gamepad Extreme"
+        interfaces = basic_gamepad extended_gamepad motion_controls
+        labels =
+        {
+            a "A", b "B", c "C", x "X", y "Y", z "Z"
+            start "Start"
+        }
+
+        # Expects the G-FORCE TILT sensor to be activated
+        default:
+            select=nil
+            accelx=a0 accely=a1
+    }
+
+    046d.c209
+    {
+        name = "Logitech WingMan Gamepad"
+        interfaces = basic_gamepad extended_gamepad
+        labels =
+        {
+            a "A", b "B", c "C", x "X", y "Y", z "Z"
+            start "Start", select "Select"
+        }
+        default:
+            dpx=h0x dpy=h0y
+            a=b0 b=b1 c=b2 x=b3 y=b4 z=b5 l1=b6 r1=b7 start=b8 select=b9
+    }
+
+    046d.c20a : 046d.c20b
+    {
+        name = "Logitech WingMan RumblePad"
+        labels =
+        {
+            l1 "L1", r1 "R1", l2 "L2", r2 "R2"
+            start "Start"
+        }
+        default: rsx=a3 rsy=a4 l2=b9 r2=b10
+    }
+
+    046d.c20b : 045d.c209
+    {
+        name = "Logitech WingMan Action Pad"
+        interfaces = basic_gamepad extended_gamepad extra
+        labels =
+        {
+            start "S"
+        }
+        default:
+            a0=a2    # A slider. May be added to extended_gamepad if several
+                    # other gamepads have it.
+            select=nil
+    }
+    046d.c20c
+    {
+        name = "Logitech Wingman Precision USB Gamepad"
+        labels =
+        {
+            a "A", b "B", x "X", y "Y"
+        }
+        default : dpx=h0x dpy=h0y a=b0 b=b1 x=b2 y=b3 l1=b4 r1=b5
+    }
+
+    046d.c211 : 046d.c20a
+    {
+        name = "Logitech WingMan Cordless Rumblepad"
+    }
+
+    046d.c216
+    {
+        # This ID is also the F310 controller in DirectInput mode,
+        # with has Xbox 360 labels.
+        # For now, this distinction is not supported.
+        # This may be solved by adding config tags based on the reported name.
+        name = "Logitech Dual Action Gamepad"
+        interfaces = basic_gamepad
+        default:
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a3
+            a=b1 b=b2 x=b0 y=b3 l1=b4 r1=b5 l2=b6 r2=b7
+            ls=b10 rs=b11 select=b8 start=b9
+
+    }
+
+    046d.c218 : 046d.c216
+    {
+        # This is also the Logitech F510 in DirectInput mode.
+        name = "Logitech RumblePad 2"
+    }
+
+    046d.c219 : 046d.c216
+    {
+        # This is also the Logitech F710 in DirectInput mode.
+        name = "Logitech Cordless RumblePad 2"
+        interfaces = basic_gamepad
+    }
+
+    046d.c21a
+    {
+        name = "Logitech Precision Gamepad"
+        default:
+            dpx=h0x dpy=h0y select=b8 start=b9
+            a=b1 b=b2 x=b0 y=b3 l1=b4 r1=b5 l2=b6 r2=b7
+    }
+
+    046d.c21d : 045e.028e
+    {
+        # 046d.c216 in XInput mode
+        name = "Logitech F310 Gamepad"
+        default: guide=nil
+    }
+
+    046d.c21e : 046d.c21d
+    {
+        # 046d.c218 in XInput mode
+        name = "Logitech F510 Gamepad"
+    }
+
+    046d.c21f : 046d.c21d
+    {
+        # 046d.c219 in XInput mode
+        name = "Logitech F710 Gamepad"
+    }
+
+    # 046d.ca84 Cordless controller for Xbox
+    # 046d.ca88 Thunderpad for Xbox
+    # Same as 045e.0202 ?
+
+    # 046d.f301 ?
+
+    # Vendor ID 054c : Sony
+    054c.0268
+    {
+        name = "Sony DualShock 3"
+        interfaces = basic_gamepad extended_gamepad
+        # Accelerometers is either not reported or reported in different device.
+        # Extra work is needed to support all features.
+        labels = ps3
+        default:
+            dpx=h0x dpy=h0y lx=a0 ly=a1 rx=a3 ry=a4
+            a=b0 b=1 x=b3 y=b2 l1=b4 r1=b5 l2=b6a2 r2=a5 #l2=b6 r2=b7
+            select=b8 start=b9 home=b10
+            ls=b11 rs=b12
+    }
+
+    054c.05c4
+    {
+        name = "Sony DualShock 4"
+        interfaces = basic_gamepad extended_gamepad
+        # Accelerometers and touch screen are either not reported or reported in different devices.
+        # Extra work is needed to support all features.
+        labels = ps4
+        default:
+            dpx=h0x dpy=h0y lx=a0 ly=a1 rx=a2 ay=a5
+            a=b1 b=b2 x=b0 y=b3 l1=b4 r1=b5 l2=a3 r2=a4 #l2=b6 r2=b7
+            ls=b10 rs=b11 select=b8 start=b9 home=b12
+        linux:
+            rx=a3 ry=a4
+            a=b0 b=b1 x=b3 y=b2 l1=b4 r1=b5 l2=a2 r2=a5
+            ls=b11 rs=b12 select=b8 start=b9 home=b10
+    }
+
+    # Vendor ID 0583 : Rockfire - Padix
     0583.2060
     {
         name = "iBuffalo Classic USB Gamepad"
-        labels = snes
         interfaces = basic_gamepad
+        labels = snes
         default: dpx=a0 dpy=a1 a=b1 b=b0 x=b3 y=b2 l1=b4 r1=b5 select=b6 start=b7
     }
+
+    1d79.0301
+    {
+        name = "Wii classic controller adapter for PC USB"
+        interfaces = basic_gamepad extended_gamepad
+        labels = nintendo_modern
+        default:
+            dpx=h0x dpy=h0y lx=a0 ly=a1 rx=a2 ry=a3
+            a=b2 b=b1 x=b3 y=b0 l1=b6 r1=b7 l2=b4 r2=b5
+            ls=b10 rs=b11
+            select=b8 start=b9 home=b10
+
+    }
+
 }
