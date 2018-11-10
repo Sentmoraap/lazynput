@@ -119,8 +119,11 @@ labels
 
     ps4 : ps3
     {
+        basic_gamepad:
         select  "$TOUCHPAD"
         start   "Options"
+
+        extended_gamepad:
         capture "Share"
     }
 
@@ -146,26 +149,28 @@ labels
         y        "Y"            EEB136
     }
 
-    xbox
+    xbox : xbox_base
     {
         basic_gamepad:
+        select   "Back"
+        start    "Start"
+
+        extended_gamepad:
         c        nil            000000
         z        nil            FFFFFF
-        select    "Back"
-        start    "Start"
     }
 
     xbox_360 : xbox_base
     {
         basic_gamepad:
-        l1        "LB"
-        r1        "RB"
-        l2        "LT"
-        r2        "RT"
-        ls        "LS"
-        rs        "RS"
-        select    "Back"
-        start    "Start"
+        l1      "LB"
+        r1      "RB"
+        l2      "LT"
+        r2      "RT"
+        ls      "LS"
+        rs      "RS"
+        select  "Back"
+        start   "Start"
 
         extended_gamepad:
         home    "$XBOX_LOGO"
@@ -173,7 +178,8 @@ labels
 
     xbox_one : xbox_360
     {
-        select    "$XBOX_VIEW"
+        basic_gamepad:
+        select   "$XBOX_VIEW"
         start    "$HAMBURGER_MENU"
     }
 }

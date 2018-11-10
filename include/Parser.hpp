@@ -68,6 +68,12 @@ namespace Lazynput
             /// \return true if successfully parsed, false otherwise.
             bool parseInterfacesBlock();
 
+            /// \brief Parses a labels definition block.
+            /// \param interfaces : sorted vector containing interfaces to look for, or nullptr for a preset definition.
+            /// \param labels : hashmap to be filled. Can be modified even if the parsing fails.
+            /// \return true if successfully parsed, false otherwise.
+            bool parseLabelsSubBlock(const std::vector<StrHash> *interfaces, StrHashMap<LabelInfosPrivate> &labels);
+
             /// \brief Parse a labels block from input stream.
             ///
             /// Parse labels data from a text input stream. Existing data will be overrided and applied to all devices,
@@ -76,13 +82,6 @@ namespace Lazynput
             /// \return true if successfully parsed, false otherwise.
             bool parseLabelsBlock();
 
-            /// \brief Parses a devices block from input stream.
-            ///
-            /// Parse devices data from a text input stream. Existing data will be overrided.
-            ///
-            /// \return true if successfully parsed, false otherwise.
-            bool parseDevicesBlock();
-
             /// \brief Parses a binding definition.
             ///
             /// Parse an input binding. The function ends when it encounters a space.
@@ -90,11 +89,12 @@ namespace Lazynput
             /// \return true if successfully parsed, false otherwise.
             bool parseBindingInput(BindingInfos &binding);
 
-            /// \brief Parses a labels definition block.
-            /// \param interfaces : sorted vector containing interfaces to look for, or nullptr for a preset definition.
-            /// \param labels : hashmap to be filled. Can be modified even if the parsing fails.
+            /// \brief Parses a devices block from input stream.
+            ///
+            /// Parse devices data from a text input stream. Existing data will be overrided.
+            ///
             /// \return true if successfully parsed, false otherwise.
-            bool parseLabelsSubBlock(const std::vector<StrHash> *interfaces, StrHashMap<LabelInfosPrivate> &labels);
+            bool parseDevicesBlock();
 
         public:
             /// \brief Constructs and initializes the parser.

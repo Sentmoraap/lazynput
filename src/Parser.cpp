@@ -222,6 +222,175 @@ namespace Lazynput
         return false;
     }
 
+    bool Parser::parseLabelsSubBlock(const std::vector<StrHash> *interfaces, StrHashMap<LabelInfosPrivate> &labels)
+    {
+        enum : uint8_t {LINE_START, LINE_NAME, LINE_2ND_TOKEN, LINE_COLOR, LINE_END} state = LINE_START;
+        StrHash hash, labelsHash, lineHash, interfaceHash;
+        std::string token, labelsName, lineName, interfaceName;
+        Labels newLabels;
+        LabelInfosPrivate *labelInfos;
+        Interface *interface = nullptr;
+
+        auto getLabelInput = [this, interfaces,
+                &interface, &lineHash, &interfaceHash, &lineName, &interfaceName, &newLabels, &labelInfos]()
+        {
+            if(interfaces)
+            {
+                if(!interface)
+                {
+                    interfaceHash = getInputInterface(*interfaces, lineHash, lineName).first;
+                    if(interfaceHash == StrHash()) return false;
+                }
+            }
+            else
+            {
+                if(!interface)
+                {
+                    errorsWriter.error("label " + lineName + " does not belong to any interface");
+                    return false;
+                }
+                if(!interface->count(lineHash))
+                {
+                    errorsWriter.error("unknown input " + lineName + " in interface " + interfaceName);
+                    return false;
+                }
+            }
+            lineHash = interfaceHash;
+            lineHash.hashCharacter('.');
+            for(const char *c = lineName.c_str(); *c; c++) lineHash.hashCharacter(*c);
+            if(newLabels.map.count(lineHash))
+            {
+                errorsWriter.error("label " + lineName + " defined multiple times");
+                return false;
+            }
+            labelInfos = &newLabels.map[lineHash];
+            return true;
+        };
+
+        while(extractor.getNextToken(hash, &token))
+        {
+            switch(state)
+            {
+                case LINE_START:
+                    switch(hash)
+                    {
+                        case "}"_hash:
+                            return true;
+                        case "\n"_hash:
+                            break;
+                        default:
+                            if(!Utils::isNameCharacter(token[0]))
+                            {
+                                errorsWriter.unexpectedTokenError(token);
+                                return false;
+                            }
+                            else
+                            {
+                                lineHash = hash;
+                                lineName = token;
+                                state = LINE_2ND_TOKEN;
+                                if(interfaces) interface = nullptr;
+                            }
+                            break;
+                    }
+                    break;
+                case LINE_NAME:
+                    if(!interface->count(hash))
+                    {
+                        errorsWriter.error("unknown input " + token + " in interface " + interfaceName);
+                        return false;
+                    }
+                    lineHash = hash;
+                    lineName = token;
+                    state = LINE_2ND_TOKEN;
+                    break;
+                case LINE_2ND_TOKEN:
+                    switch(hash)
+                    {
+                        case ":"_hash:
+                            if(interfaces)
+                            {
+                                errorsWriter.unexpectedTokenError(token);
+                                return false;
+                            }
+                            interface = getInterface(lineHash);
+                            if(!interface)
+                            {
+                                errorsWriter.error("unknwon interface " + interfaceName);
+                                return false;
+                            }
+                            interfaceName = lineName;
+                            state = LINE_END;
+                            break;
+                        case "."_hash:
+                            if(!interfaces || interface)
+                            {
+                                errorsWriter.unexpectedTokenError(token);
+                                return false;
+                            }
+                            interface = getInterface(lineHash);
+                            if(!interface)
+                            {
+                                errorsWriter.error("unknwon interface " + interfaceName);
+                                return false;
+                            }
+                            interfaceHash = lineHash;
+                            interfaceName = lineName;
+                            state = LINE_NAME;
+                            break;
+                        case "nil"_hash:
+                            if(!getLabelInput()) return false;
+                            state = LINE_COLOR;
+                        break;
+                        default:
+                            if(token[0] != '"')
+                            {
+                                errorsWriter.unexpectedTokenError(token);
+                                return false;
+                            }
+                            if(!getLabelInput()) return false;
+                            token.pop_back();
+                            token.erase(0,1);
+                            labelInfos->label = token;
+                            state = LINE_COLOR;
+                            break;
+                    }
+                    break;
+                case LINE_COLOR:
+                    switch(hash)
+                    {
+                        case "\n"_hash:
+                            labelInfos->hasColor = false;
+                            state = LINE_START;
+                            break;
+                        default:
+                        {
+                            uint8_t i;
+                            for(i = 0; i < 6; i++) if(!isxdigit(token[i])) break;
+                            if(i != 6 || token[6] != 0)
+                            {
+                                errorsWriter.error(token + " is not an RRGGBB sRGB hex color");
+                                return false;
+                            }
+                            uint32_t val = strtoul(token.c_str(), nullptr, 16);
+                            labelInfos->color.r = val >> 16;
+                            labelInfos->color.g = (val >> 8) & 255;
+                            labelInfos->color.b = val & 255;
+                            labelInfos->hasColor = false;
+                            state = LINE_START;
+                            break;
+                        }
+                    }
+                    break;
+                case LINE_END:
+                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "\n"_hash, token, LINE_START))
+                        return false;
+                    break;
+            }
+        }
+        return false;
+    }
+
     bool Parser::parseLabelsBlock()
     {
         enum : uint8_t {START, INSIDE_BLOCK, LABELS_START, INHERITANCE, AFTER_INHERITANCE} state = START;
@@ -318,6 +487,78 @@ namespace Lazynput
             }
         }
         return false;
+    }
+
+    bool Parser::parseBindingInput(BindingInfos &binding)
+    {
+        enum : uint8_t {MAY_INVERT, INPUT, AXIS_HALF, END} state = MAY_INVERT;
+        StrHash hash;
+        std::string token;
+        binding.options.half = false;
+        binding.options.invert = false;
+        while(extractor.isNextTokenStuck() && extractor.getNextToken(hash, &token))
+        {
+            switch(state)
+            {
+                case MAY_INVERT:
+                    if(hash == "~"_hash)
+                    {
+                        binding.options.invert = true;
+                        state = INPUT;
+                        break;
+                    }
+                // Fallthrough
+                case INPUT:
+                    switch(token[0])
+                    {
+                        case 'a':
+                            binding.type = InputType::ABSOLUTE_AXIS;
+                            state = binding.options.invert ? END : AXIS_HALF;
+                            break;
+                        case 'b':
+                            binding.type = InputType::BUTTON;
+                            state = END;
+                            break;
+                        case 'h':
+                            binding.type = InputType::HAT;
+                            state = binding.options.invert ? END : AXIS_HALF;
+                            break;
+                        case 'r':
+                            binding.type = InputType::RELATIVE_AXIS;
+                            state = binding.options.invert ? END : AXIS_HALF;
+                            break;
+                        default:
+                            errorsWriter.unexpectedTokenError(token);
+                            return false;
+                    }
+                    break;
+                case AXIS_HALF:
+                    switch(token[0])
+                    {
+                        case '+':
+                            binding.options.half = true;
+                            break;
+                        case '-':
+                            binding.options.invert = true;
+                            binding.options.half = true;
+                            break;
+                        default:
+                            errorsWriter.unexpectedTokenError(token);
+                            return false;
+                    }
+                    state = END;
+                    break;
+                case END:
+                    errorsWriter.unexpectedTokenError(token);
+                    return false;
+            }
+        }
+        if(state < AXIS_HALF)
+        {
+            errorsWriter.error("binding not complete");
+            return false;
+        }
+        else return true;
     }
 
     bool Parser::parseDevicesBlock()
@@ -724,237 +965,6 @@ namespace Lazynput
                     break;
                 case END_OF_LINE:
                     if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "\n"_hash, token, nextState))
-                        return false;
-                    break;
-            }
-        }
-        return false;
-    }
-
-    bool Parser::parseBindingInput(BindingInfos &binding)
-    {
-        enum : uint8_t {MAY_INVERT, INPUT, AXIS_HALF, END} state = MAY_INVERT;
-        StrHash hash;
-        std::string token;
-        binding.options.half = false;
-        binding.options.invert = false;
-        while(extractor.isNextTokenStuck() && extractor.getNextToken(hash, &token))
-        {
-            switch(state)
-            {
-                case MAY_INVERT:
-                    if(hash == "~"_hash)
-                    {
-                        binding.options.invert = true;
-                        state = INPUT;
-                        break;
-                    }
-                // Fallthrough
-                case INPUT:
-                    switch(token[0])
-                    {
-                        case 'a':
-                            binding.type = InputType::ABSOLUTE_AXIS;
-                            state = binding.options.invert ? END : AXIS_HALF;
-                            break;
-                        case 'b':
-                            binding.type = InputType::BUTTON;
-                            state = END;
-                            break;
-                        case 'h':
-                            binding.type = InputType::HAT;
-                            state = binding.options.invert ? END : AXIS_HALF;
-                            break;
-                        case 'r':
-                            binding.type = InputType::RELATIVE_AXIS;
-                            state = binding.options.invert ? END : AXIS_HALF;
-                            break;
-                        default:
-                            errorsWriter.unexpectedTokenError(token);
-                            return false;
-                    }
-                    break;
-                case AXIS_HALF:
-                    switch(token[0])
-                    {
-                        case '+':
-                            binding.options.half = true;
-                            break;
-                        case '-':
-                            binding.options.invert = true;
-                            binding.options.half = true;
-                            break;
-                        default:
-                            errorsWriter.unexpectedTokenError(token);
-                            return false;
-                    }
-                    state = END;
-                    break;
-                case END:
-                    errorsWriter.unexpectedTokenError(token);
-                    return false;
-            }
-        }
-        if(state < AXIS_HALF)
-        {
-            errorsWriter.error("binding not complete");
-            return false;
-        }
-        else return true;
-    }
-
-    bool Parser::parseLabelsSubBlock(const std::vector<StrHash> *interfaces, StrHashMap<LabelInfosPrivate> &labels)
-    {
-        enum : uint8_t {LINE_START, LINE_NAME, LINE_2ND_TOKEN, LINE_COLOR, LINE_END} state = LINE_START;
-        StrHash hash, labelsHash, lineHash, interfaceHash;
-        std::string token, labelsName, lineName, interfaceName;
-        Labels newLabels;
-        LabelInfosPrivate *labelInfos;
-        Interface *interface = nullptr;
-
-        while(extractor.getNextToken(hash, &token))
-        {
-            switch(state)
-            {
-                case LINE_START:
-                    switch(hash)
-                    {
-                        case "}"_hash:
-                            return true;
-                        case "\n"_hash:
-                            break;
-                        default:
-                            if(!Utils::isNameCharacter(token[0]))
-                            {
-                                errorsWriter.unexpectedTokenError(token);
-                                return false;
-                            }
-                            else
-                            {
-                                lineHash = hash;
-                                lineName = token;
-                                state = LINE_2ND_TOKEN;
-                                if(interfaces) interface = nullptr;
-                            }
-                            break;
-                    }
-                    break;
-                case LINE_NAME:
-                    if(!interface->count(hash))
-                    {
-                        errorsWriter.error("unknown input " + token + " in interface " + interfaceName);
-                        return false;
-                    }
-                    lineHash = hash;
-                    lineName = token;
-                    state = LINE_2ND_TOKEN;
-                    break;
-                case LINE_2ND_TOKEN:
-                    switch(hash)
-                    {
-                        case ":"_hash:
-                            if(interfaces)
-                            {
-                                errorsWriter.unexpectedTokenError(token);
-                                return false;
-                            }
-                            interface = getInterface(lineHash);
-                            if(!interface)
-                            {
-                                errorsWriter.error("unknwon interface " + token);
-                                return false;
-                            }
-                            interfaceName = token;
-                            state = LINE_END;
-                            break;
-                        case "."_hash:
-                            if(!interfaces || interface)
-                            {
-                                errorsWriter.unexpectedTokenError(token);
-                                return false;
-                            }
-                            interface = getInterface(lineHash);
-                            if(!interface)
-                            {
-                                errorsWriter.error("unknwon interface " + token);
-                                return false;
-                            }
-                            interfaceHash = lineHash;
-                            interfaceName = lineName;
-                            state = LINE_NAME;
-                            break;
-                        default:
-                            if(token[0] != '"')
-                            {
-                                errorsWriter.unexpectedTokenError(token);
-                                return false;
-                            }
-                            if(interfaces)
-                            {
-                                if(!interface)
-                                {
-                                    interfaceHash = getInputInterface(*interfaces, lineHash, lineName).first;
-                                    if(interfaceHash == StrHash()) return false;
-                                }
-
-                            }
-                            else
-                            {
-                                if(!interface)
-                                {
-                                    errorsWriter.error("label " + lineName + " does not belong to any interface");
-                                    return false;
-                                }
-                                if(!interface->count(lineHash))
-                                {
-                                    errorsWriter.error("unknown input " + lineName + " in interface " + interfaceName);
-                                    return false;
-                                }
-                            }
-                            lineHash = interfaceHash;
-                            lineHash.hashCharacter('.');
-                            for(const char *c = lineName.c_str(); *c; c++) lineHash.hashCharacter(*c);
-                            if(newLabels.map.count(lineHash))
-                            {
-                                errorsWriter.error("label " + lineName + " defined multiple times");
-                                return false;
-                            }
-                            token.pop_back();
-                            token.erase(0,1);
-                            labelInfos = &newLabels.map[lineHash];
-                            labelInfos->label = token;
-                            state = LINE_COLOR;
-                            break;
-                    }
-                    break;
-                case LINE_COLOR:
-                    switch(hash)
-                    {
-                        case "\n"_hash:
-                            labelInfos->hasColor = false;
-                            state = LINE_START;
-                            break;
-                        default:
-                        {
-                            uint8_t i;
-                            for(i = 0; i < 6; i++) if(!isxdigit(token[i])) break;
-                            if(i != 6 || token[6] != 0)
-                            {
-                                errorsWriter.error(token + " is not an RRGGBB sRGB hex color");
-                                return false;
-                            }
-                            uint32_t val = strtoul(token.c_str(), nullptr, 16);
-                            labelInfos->color.r = val >> 16;
-                            labelInfos->color.g = (val >> 8) & 255;
-                            labelInfos->color.b = val & 255;
-                            labelInfos->hasColor = true;
-                            state = LINE_START;
-                            break;
-                        }
-                    }
-                    break;
-                case LINE_END:
-                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "\n"_hash, token, LINE_START))
                         return false;
                     break;
             }
