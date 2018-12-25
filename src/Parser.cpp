@@ -363,6 +363,18 @@ namespace Lazynput
                             labelInfos->hasColor = false;
                             state = LINE_START;
                             break;
+                        case ","_hash:
+                            if(interfaces)
+                            {
+                                labelInfos->hasColor = false;
+                                state = LINE_START;
+                            }
+                            else
+                            {
+                                errorsWriter.unexpectedTokenError(token);
+                                return false;
+                            }
+                            break;
                         default:
                         {
                             uint8_t i;
@@ -509,6 +521,7 @@ namespace Lazynput
                     }
                 // Fallthrough
                 case INPUT:
+                    // TODO : index & hat axis
                     switch(token[0])
                     {
                         case 'a':
@@ -528,6 +541,11 @@ namespace Lazynput
                             state = binding.options.invert ? END : AXIS_HALF;
                             break;
                         default:
+                            if(hash == "nil"_hash)
+                            {
+                                binding.type = InputType::NIL;
+                                return true;
+                            }
                             errorsWriter.unexpectedTokenError(token);
                             return false;
                     }
@@ -565,7 +583,7 @@ namespace Lazynput
     {
         enum : uint8_t {START, INSIDE_BLOCK, AFTER_VID, EXPECT_PID, AFTER_PID, EXPECT_PARENT_VID, AFTER_PARENT_VID,
                 EXPECT_PARENT_PID, AFTER_INHERITANCE, INSIDE_DEVICE, EXPECT_NAME, EXPECT_INTERFACE, EXPECT_LABELS,
-                TAG_OR_INPUT, END_TAG_OR_INPUT, EXPECT_INPUT, EXPECT_EQUALS, END_OF_LINE}
+                EXPECT_LABELS_BLOCK, TAG_OR_INPUT, END_TAG_OR_INPUT, EXPECT_INPUT, EXPECT_EQUALS, END_OF_LINE}
                 state = START, nextState;
         StrHash hash, prevHash, inputHash;
         std::string token, prevToken;
@@ -692,7 +710,7 @@ namespace Lazynput
                         {
                             std::ostringstream oss;
                             oss << "unknown parent " << std::setfill('0') << std::setw(4) << std::hex << parentIds.vid
-                                    << '.' << std::setfill('0') << std::setw(4) << std::hex << parentIds.pid << '\n';
+                                    << '.' << std::setfill('0') << std::setw(4) << std::hex << parentIds.pid;
                             errorsWriter.error(oss.str());
                             return false;
                         }
@@ -837,10 +855,9 @@ namespace Lazynput
                         case "\n"_hash:
                             if(!device.presetsLabels.size() && !device.ownLabels.size())
                             {
-                                errorsWriter.error("no labels at the end of line");
-                                return false;
+                                state = EXPECT_LABELS_BLOCK;
                             }
-                            state = INSIDE_DEVICE;
+                            else state = INSIDE_DEVICE;
                             break;
                         case "+"_hash:
                             if(!device.presetsLabels.size() && !device.ownLabels.size())
@@ -853,12 +870,6 @@ namespace Lazynput
                             break;
                         case "{"_hash:
                         {
-                            DeviceData *d = &device;
-                            while(d->interfaces.empty() && d->parent != HidIds::invalid)
-                            {
-                                if(newDevicesDb.devices.count(d->parent)) d = &newDevicesDb.devices[d->parent];
-                                else d = &oldDevicesDb.devices[d->parent];
-                            }
                             if(!parseLabelsSubBlock(&deviceInterfaces, device.ownLabels)) return false;
                             state = END_OF_LINE;
                             nextState = INSIDE_DEVICE;
@@ -878,6 +889,19 @@ namespace Lazynput
                             }
                             device.presetsLabels.push_back(hash);
                             break;
+                    }
+                    break;
+                case EXPECT_LABELS_BLOCK:
+                    switch(hash)
+                    {
+                        case "{"_hash:
+                            if(!parseLabelsSubBlock(&deviceInterfaces, device.ownLabels)) return false;
+                            state = END_OF_LINE;
+                            nextState = INSIDE_DEVICE;
+                            break;
+                        default:
+                            errorsWriter.unexpectedTokenError(token);
+                            return false;
                     }
                     break;
                 case TAG_OR_INPUT:

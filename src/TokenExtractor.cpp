@@ -117,6 +117,6 @@ namespace Lazynput
     bool TokenExtractor::isNextTokenStuck()
     {
         char next = inStream.peek();
-        return next != ' ' && next != '\n';
+        return next != ' ' && next != '\t' && next != '\r' && next != '\n';
     }
 }

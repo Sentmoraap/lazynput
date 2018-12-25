@@ -19,26 +19,26 @@ interfaces
     extra
     {
         btn:
-        b0  b1  b2  b3
-        b4  b5  b6  b7
-        b8  b9  b10 b11
-        b12 b13 b14 b15
-        b16 b17 b18 b19
-        b20 b21 b22 b23
-        b24 b25 b26 b27
-        b28 b29 b30 b31
+        btn0  btn1  btn2  btn3
+        btn4  btn5  btn6  btn7
+        btn8  btn9  btn10 btn11
+        btn12 btn13 btn14 btn15
+        btn16 btn17 btn18 btn19
+        btn20 btn21 btn22 btn23
+        btn24 btn25 btn26 btn27
+        btn28 btn29 btn30 btn31
 
         abs:
-        a0  a1  a2  a3
-        a4  a5  a6  a7
-        a8  a9  a10 a11
-        a12 a13 a14 a15
+        abs0  abs1  abs2  abs3
+        abs4  abs5  abs6  abs7
+        abs8  abs9  abs10 abs11
+        abs12 abs13 abs14 abs15
 
         rel:
-        r0  r1  r2  r3
-        r4  r5  r6  r7
-        r8  r9  r10 r11
-        r12 r13 r14 r15
+        rel0  rel1  rel2  rel3
+        rel4  rel5  rel6  rel7
+        rel8  rel9  rel10 rel11
+        rel12 rel13 rel14 rel15
     }
 
     # This is the interface that most games can reasonably expect to be fully implemented.
@@ -202,6 +202,18 @@ devices
 
     # A lot of this data came from internet researches.  There may be some mistakes.
 
+    # Base controllers inherited by a lot of controllers
+    045e.028e
+    {
+        name = "Xbox 360 controller"
+        interfaces = basic_gamepad extended_gamepad
+        labels = xbox_360
+        default:
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a3 rsy=a4
+            a=b0 b=b1 x=b2 y=b3 l1=b4 r1=b5 l2=a2 r2=a5
+            ls=b9 rs=b10 select=b6 start=b7 home=b8
+    }
+
     # Vendor ID 044f : Thrustmaster
     044f.044f : 045e.028e
     {
@@ -214,16 +226,6 @@ devices
 
     # 044f.0f07 : can it just inherit the original xbox controller ?
 
-    044f.a003 : 044f.a0a3
-    {
-        name = "Thrustmaster Rage 3D Digital PC Game pad"
-        labels=
-        {
-            a "A", b "B", c "C", x "X", y "Y", z "Z"
-            select "Select", start "Start"
-        }
-    }
-
     044f.a0a3
     {
         name = "Thrustmaster Fusion Digital gamepad"
@@ -231,6 +233,16 @@ devices
         default:
             lsx=a0 lsy=a1
             a=b0 b=b1 c=b2 x=b3 y=b4 z=b5 start=b6 select=b7 l1=b8 r1=b9
+    }
+
+    044f.a003 : 044f.a0a3
+    {
+        name = "Thrustmaster Rage 3D Digital PC Game pad"
+        labels =
+        {
+            a "A", b "B", c "C", x "X", y "Y", z "Z"
+            select "Select", start "Start"
+        }
     }
 
     044f.b300
@@ -331,7 +343,7 @@ devices
         default:
             dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a5
             a=b1 b=b2 x=b0 y=b3 l1=b4 r1=b5 l2=~a3 r2=~a4 l3=b6 r3=b7
-            ls=b10 rs=b11 select=b8 start=b9 a0=a6
+            ls=b10 rs=b11 select=b8 start=b9 abs0=a6
     }
 
     # 044f.d007 : T-Wireless
@@ -353,7 +365,7 @@ devices
     045e.000e
     {
         name = "Microsoft SideWinder Freestyle Pro"
-        interfaces = basic_gamepad extended_gamepad motion_controls
+        interfaces = basic_gamepad extended_gamepad motion_controls extra
         labels =
         {
             a "A", b "B", c "C", x "X", y "Y", z "Z"
@@ -364,7 +376,7 @@ devices
             dpx=h0x dpy=h0y accelx=a0 accely=a1
             a=b0 b=b1 c=b2 x=b3 y=b4 z=b5
             l1=b6 r1=b7 start=b8 select=b9
-            a0=a2 # A throttle wheel.
+            abs0=a2 # A throttle wheel.
     }
 
     045e.0202
@@ -373,7 +385,7 @@ devices
         interfaces = basic_gamepad extended_gamepad
         labels = xbox
         default:
-            dpx=h0x dpy=h0y lx=a0 ly=a1 rx=a3 ry=a4
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a3 rsy=a4
             a=b0 b=b1 c=b2 x=b3 y=b4 z=b5 l1=a2 r1=a5
             ls=b8 rs=b9 select=b6 start=b7
     }
@@ -385,16 +397,7 @@ devices
 
     045e.0289 : 045e.0285 {}
 
-    045e.028e
-    {
-        name = "Xbox 360 controller"
-        interfaces = basic_gamepad extended_gamepad
-        labels = xbox_360
-        default:
-            dpx=h0x dpy=h0y lx=a0 ly=a1 rx=a3 ry=a4
-            a=b0 b=b1 x=b2 y=b3 l1=b4 r1=b5 l2=a2 r2=a5
-            ls=b9 rs=b10 select=b6 start=b7 home=b8
-    }
+    #045e.028e : defined earlier
 
     045e.0291 : 045e.028e
     {
@@ -432,7 +435,7 @@ devices
         name = "Xbox One Wireless Controller"
         interfaces = basic_gamepad extended_gamepad
         default:
-            dpx=h0x dpy=h0y lx=a0 ly=a1 rx=a2 ry=a3
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a3
             a=b0 b=b1 x=b3 y=b4
             l1=b6 l2=a5 r1=b7 r2=a4
             ls=b13 rs=b14 select=b15 start=b11 home=b16
@@ -444,6 +447,20 @@ devices
     046d.0242 : 045e.028e
     {
         name = "Logitech ChillStream"
+    }
+
+    046d.c209
+    {
+        name = "Logitech WingMan Gamepad"
+        interfaces = basic_gamepad extended_gamepad
+        labels =
+        {
+            a "A", b "B", c "C", x "X", y "Y", z "Z"
+            start "Start", select "Select"
+        }
+        default:
+            dpx=h0x dpy=h0y
+            a=b0 b=b1 c=b2 x=b3 y=b4 z=b5 l1=b6 r1=b7 start=b8 select=b9
     }
 
     046d.c208 : 046d.c209
@@ -462,18 +479,18 @@ devices
             accelx=a0 accely=a1
     }
 
-    046d.c209
+    046d.c20b : 046d.c209
     {
-        name = "Logitech WingMan Gamepad"
-        interfaces = basic_gamepad extended_gamepad
+        name = "Logitech WingMan Action Pad"
+        interfaces = basic_gamepad extended_gamepad extra
         labels =
         {
-            a "A", b "B", c "C", x "X", y "Y", z "Z"
-            start "Start", select "Select"
+            start "S"
         }
         default:
-            dpx=h0x dpy=h0y
-            a=b0 b=b1 c=b2 x=b3 y=b4 z=b5 l1=b6 r1=b7 start=b8 select=b9
+            abs0=a2 # A slider. May be added to extended_gamepad if several
+                    # other gamepads have it.
+            select=nil
     }
 
     046d.c20a : 046d.c20b
@@ -487,22 +504,10 @@ devices
         default: rsx=a3 rsy=a4 l2=b9 r2=b10
     }
 
-    046d.c20b : 045d.c209
-    {
-        name = "Logitech WingMan Action Pad"
-        interfaces = basic_gamepad extended_gamepad extra
-        labels =
-        {
-            start "S"
-        }
-        default:
-            a0=a2    # A slider. May be added to extended_gamepad if several
-                    # other gamepads have it.
-            select=nil
-    }
     046d.c20c
     {
         name = "Logitech Wingman Precision USB Gamepad"
+        interfaces = basic_gamepad
         labels =
         {
             a "A", b "B", x "X", y "Y"
@@ -546,6 +551,7 @@ devices
     046d.c21a
     {
         name = "Logitech Precision Gamepad"
+        interfaces = basic_gamepad
         default:
             dpx=h0x dpy=h0y select=b8 start=b9
             a=b1 b=b2 x=b0 y=b3 l1=b4 r1=b5 l2=b6 r2=b7
@@ -555,7 +561,7 @@ devices
     {
         # 046d.c216 in XInput mode
         name = "Logitech F310 Gamepad"
-        default: guide=nil
+        default: home=nil
     }
 
     046d.c21e : 046d.c21d
@@ -585,8 +591,8 @@ devices
         # Extra work is needed to support all features.
         labels = ps3
         default:
-            dpx=h0x dpy=h0y lx=a0 ly=a1 rx=a3 ry=a4
-            a=b0 b=1 x=b3 y=b2 l1=b4 r1=b5 l2=b6a2 r2=a5 #l2=b6 r2=b7
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a3 rsy=a4
+            a=b0 b=b1 x=b3 y=b2 l1=b4 r1=b5 l2=b6a2 r2=a5 #l2=b6 r2=b7
             select=b8 start=b9 home=b10
             ls=b11 rs=b12
     }
@@ -599,11 +605,11 @@ devices
         # Extra work is needed to support all features.
         labels = ps4
         default:
-            dpx=h0x dpy=h0y lx=a0 ly=a1 rx=a2 ay=a5
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a5
             a=b1 b=b2 x=b0 y=b3 l1=b4 r1=b5 l2=a3 r2=a4 #l2=b6 r2=b7
             ls=b10 rs=b11 select=b8 start=b9 home=b12
         linux:
-            rx=a3 ry=a4
+            rsx=a3 rsy=a4
             a=b0 b=b1 x=b3 y=b2 l1=b4 r1=b5 l2=a2 r2=a5
             ls=b11 rs=b12 select=b8 start=b9 home=b10
     }
@@ -621,9 +627,9 @@ devices
     {
         name = "Wii classic controller adapter for PC USB"
         interfaces = basic_gamepad extended_gamepad
-        labels = nintendo_modern
+        labels = nintendo_modern # TODO: fix not getting an error there
         default:
-            dpx=h0x dpy=h0y lx=a0 ly=a1 rx=a2 ry=a3
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a3
             a=b2 b=b1 x=b3 y=b0 l1=b6 r1=b7 l2=b4 r2=b5
             ls=b10 rs=b11
             select=b8 start=b9 home=b10

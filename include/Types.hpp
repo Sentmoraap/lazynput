@@ -45,6 +45,7 @@ namespace Lazynput
     /// \brief A device's input type.
     enum class InputType : uint8_t
     {
+        NIL,
         BUTTON,
         HAT,
         ABSOLUTE_AXIS,
