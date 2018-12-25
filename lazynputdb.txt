@@ -94,6 +94,31 @@ labels
     # Dollar names can be used for shapes and logos. The game should display the correct picture or a localized name.
     # A layout can extend another one and override some of it's parents' labels.
 
+    nintendo_classic
+    {
+        basic_gamepad:
+        a       "B"         FECE15
+        b       "A"         EB1A1D
+        x       "Y"         008D45
+        y       "X"         0749B4
+        l1      "L"
+        r1      "R"
+        select  "Select"
+        start   "Start"
+    }
+
+    nintendo_modern : nintendo_classic
+    {
+        basic_gamepad:
+        l2      "ZL"
+        r2      "ZR"
+        select  "-"
+        start   "+"
+
+        extended_gamepad:
+        home    "$HOME"
+    }
+
     ps1
     {
         basic_gamepad:
@@ -125,19 +150,6 @@ labels
 
         extended_gamepad:
         capture "Share"
-    }
-
-    snes
-    {
-        basic_gamepad:
-        a       "B"         FECE15
-        b       "A"         EB1A1D
-        x       "Y"         008D45
-        y       "X"         0749B4
-        l1      "L"
-        r1      "R"
-        select  "Select"
-        start   "Start"
     }
 
     xbox_base
@@ -619,7 +631,7 @@ devices
     {
         name = "iBuffalo Classic USB Gamepad"
         interfaces = basic_gamepad
-        labels = snes
+        labels = nintendo_classic
         default: dpx=a0 dpy=a1 a=b1 b=b0 x=b3 y=b2 l1=b4 r1=b5 select=b6 start=b7
     }
 
@@ -627,7 +639,7 @@ devices
     {
         name = "Wii classic controller adapter for PC USB"
         interfaces = basic_gamepad extended_gamepad
-        labels = nintendo_modern # TODO: fix not getting an error there
+        labels = nintendo_modern
         default:
             dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a3
             a=b2 b=b1 x=b3 y=b0 l1=b6 r1=b7 l2=b4 r2=b5

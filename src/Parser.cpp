@@ -887,6 +887,11 @@ namespace Lazynput
                                 errorsWriter.error("labels preset " + token + " used multiple times");
                                 return false;
                             }
+                            if(!newDevicesDb.labels.count(hash) && !oldDevicesDb.labels.count(hash))
+                            {
+                                errorsWriter.error("unknown labels " + token);
+                                return false;
+                            }
                             device.presetsLabels.push_back(hash);
                             break;
                     }
