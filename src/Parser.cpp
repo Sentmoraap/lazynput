@@ -521,23 +521,68 @@ namespace Lazynput
                     }
                 // Fallthrough
                 case INPUT:
-                    // TODO : index & hat axis
+                {
+                    auto parseInputIndex = [this, &token, &binding]()
+                    {
+                        char *endChar;
+                        const char *beginChar = token.c_str();
+                        static char errorChar = 0;
+                        int inputIndex = strtol(beginChar + 1, &endChar, 10);
+                        if(inputIndex < 0 || inputIndex > 255)
+                        {
+                            errorsWriter.error("index of " + token + " outside range [0-255]");
+                            return &errorChar;
+                        }
+                        binding.index = static_cast<uint8_t>(inputIndex);
+                        return endChar;
+                    };
                     switch(token[0])
                     {
                         case 'a':
                             binding.type = InputType::ABSOLUTE_AXIS;
+                            if(*(parseInputIndex()))
+                            {
+                                errorsWriter.unexpectedTokenError(token);
+                                return false;
+                            }
                             state = binding.options.invert ? END : AXIS_HALF;
                             break;
                         case 'b':
                             binding.type = InputType::BUTTON;
+                            if(*(parseInputIndex()))
+                            {
+                                errorsWriter.unexpectedTokenError(token);
+                                return false;
+                            }
                             state = END;
                             break;
                         case 'h':
+                        {
                             binding.type = InputType::HAT;
+                            const char *endChar = parseInputIndex();
+                            binding.index *= 2;
+                            switch(*endChar)
+                            {
+                                case 'y':
+                                    binding.index++;
+                                // Fallthrough
+                                case 'x':
+                                    if(!*(endChar + 1)) break;
+                                // Fallthrough
+                                default:
+                                    errorsWriter.unexpectedTokenError(token);
+                                    return false;
+                            }
                             state = binding.options.invert ? END : AXIS_HALF;
                             break;
+                        }
                         case 'r':
                             binding.type = InputType::RELATIVE_AXIS;
+                            if(*(parseInputIndex()))
+                            {
+                                errorsWriter.unexpectedTokenError(token);
+                                return false;
+                            }
                             state = binding.options.invert ? END : AXIS_HALF;
                             break;
                         default:
@@ -546,10 +591,11 @@ namespace Lazynput
                                 binding.type = InputType::NIL;
                                 return true;
                             }
-                            errorsWriter.unexpectedTokenError(token);
+                            errorsWriter.error("unknown input " + token);
                             return false;
                     }
                     break;
+                }
                 case AXIS_HALF:
                     switch(token[0])
                     {

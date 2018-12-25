@@ -604,7 +604,7 @@ devices
         labels = ps3
         default:
             dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a3 rsy=a4
-            a=b0 b=b1 x=b3 y=b2 l1=b4 r1=b5 l2=b6a2 r2=a5 #l2=b6 r2=b7
+            a=b0 b=b1 x=b3 y=b2 l1=b4 r1=b5 l2=a2 r2=a5 #l2=b6 r2=b7
             select=b8 start=b9 home=b10
             ls=b11 rs=b12
     }
