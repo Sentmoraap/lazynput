@@ -205,6 +205,10 @@ devices
     # Mapping an device axis to an interface button binds the whole axis' range by default.
     # You can map device's half axes and inverted axes if needed.
 
+    # You can use & and | to bind several devices inputs to one interfae input, for example is a pair of trigger is
+    # seen as a single axis and two buttons, you can do something like l2=a3-|b6&b7 r2=a3+|b6&b7 for supporting both
+    # analog input and simultaneous (but digital) input.
+
     # If a device needs different mappings depending on the operating system, driver version or some other parameters,
     # it can provide overrides depending on the parameters.
     # They can also be nested if needed.
@@ -718,7 +722,7 @@ devices
         }
         default:
             dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a4
-            a=b1 b=b2 x=b0 y=b3 l1=b4 r1=b5 l2=a3- r2=a3+
+            a=b1 b=b2 x=b0 y=b3 l1=b4 r1=b5 l2=a3-|b6&b7 r2=a3+|b6&b7
             select=b8 start=b9 home=b12 ls=b10 rs=b11
 
     }
@@ -751,10 +755,8 @@ devices
         interfaces = basic_gamepad
         labels = xbox_360
         default:
-            # L2 & R2 are also buttons 6 & 7.
-            # TODO: better support of pair of triggers that share an axis but are alos separate buttons.
             dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a3 rsy=a4
-            a=b1 b=b2 x=b0 y=b3 l1=b4 r1=b5 l2=a2- r2=a2+
+            a=b1 b=b2 x=b0 y=b3 l1=b4 r1=b5 l2=a2-|b6&b7 r2=a2+|b6&b7
             select=b8 start=b9 ls=b10 rs=b11
     }
 

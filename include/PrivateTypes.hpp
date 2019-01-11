@@ -72,7 +72,7 @@ namespace Lazynput
         StrHashMap<LabelInfosPrivate> ownLabels;
 
         /// Bindings, outer map is config tag, inner map is interface.input.
-        StrHashMap<StrHashMap<BindingInfos>> bindings;
+        StrHashMap<StrHashMap<FullBindingInfos>> bindings;
     };
 
     /// \brief (name, labeld) hash map to store all devices data.

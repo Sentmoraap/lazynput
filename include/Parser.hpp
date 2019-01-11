@@ -82,12 +82,28 @@ namespace Lazynput
             /// \return true if successfully parsed, false otherwise.
             bool parseLabelsBlock();
 
-            /// \brief Parses a binding definition.
+            /// \brief Parses a single binding definition.
             ///
-            /// Parse an input binding. The function ends when it encounters a space.
+            /// Parse a single device's input binding, from possibly several device's bindings for one interfaces
+            /// binding. If it finds a token which does not belong to a single binding definition, it passes it to the
+            /// caller function.
             ///
+            /// \param fullBinding : binding to be filled.
+            /// \param unparsedToken : set to true if the function got a token to be parsed by the caller.
+            /// \param hash : hash of the unparsed token
+            /// \param token : unparsed token.
             /// \return true if successfully parsed, false otherwise.
-            bool parseBindingInput(BindingInfos &binding);
+            bool parseSingleBindingInput(SingleBindingInfos &binding, bool &unparsedToken, StrHash &hash,
+                std::string &token);
+
+            /// \brief Parses a full binding definition.
+            ///
+            /// Parse a interface's input binding. Can be several device's inputs.
+            /// The function ends when it encounters a space.
+            ///
+            /// \param fullBinding : binding to be filled. Expected to be empty.
+            /// \return true if successfully parsed, false otherwise.
+            bool parseFullBindingInput(FullBindingInfos &fullBinding);
 
             /// \brief Parses a devices block from input stream.
             ///

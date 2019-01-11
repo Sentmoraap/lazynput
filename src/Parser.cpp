@@ -501,11 +501,10 @@ namespace Lazynput
         return false;
     }
 
-    bool Parser::parseBindingInput(BindingInfos &binding)
+    bool Parser::parseSingleBindingInput(SingleBindingInfos &binding, bool &unparsedToken, StrHash &hash,
+        std::string &token)
     {
-        enum : uint8_t {MAY_INVERT, INPUT, AXIS_HALF, END} state = MAY_INVERT;
-        StrHash hash;
-        std::string token;
+        enum : uint8_t {MAY_INVERT, INPUT, AXIS_HALF} state = MAY_INVERT;
         binding.options.half = false;
         binding.options.invert = false;
         while(extractor.isNextTokenStuck() && extractor.getNextToken(hash, &token))
@@ -526,8 +525,13 @@ namespace Lazynput
                     {
                         char *endChar;
                         const char *beginChar = token.c_str();
-                        static char errorChar = 0;
+                        static char errorChar = 1;
                         int inputIndex = strtol(beginChar + 1, &endChar, 10);
+                        if(endChar == beginChar + 1)
+                        {
+                            errorsWriter.error("index is missing in " + token);
+                            return &errorChar;
+                        }
                         if(inputIndex < 0 || inputIndex > 255)
                         {
                             errorsWriter.error("index of " + token + " outside range [0-255]");
@@ -540,22 +544,14 @@ namespace Lazynput
                     {
                         case 'a':
                             binding.type = InputType::ABSOLUTE_AXIS;
-                            if(*(parseInputIndex()))
-                            {
-                                errorsWriter.unexpectedTokenError(token);
-                                return false;
-                            }
-                            state = binding.options.invert ? END : AXIS_HALF;
+                            if(*(parseInputIndex())) return false;
+                            if(binding.options.invert) return true;
+                            else state = AXIS_HALF;
                             break;
                         case 'b':
                             binding.type = InputType::BUTTON;
-                            if(*(parseInputIndex()))
-                            {
-                                errorsWriter.unexpectedTokenError(token);
-                                return false;
-                            }
-                            state = END;
-                            break;
+                            if(*(parseInputIndex())) return false;
+                            return true;
                         case 'h':
                         {
                             binding.type = InputType::HAT;
@@ -570,10 +566,11 @@ namespace Lazynput
                                     if(!*(endChar + 1)) break;
                                 // Fallthrough
                                 default:
-                                    errorsWriter.unexpectedTokenError(token);
+                                    if(endChar > token.c_str() + 1) errorsWriter.unexpectedTokenError(token);
                                     return false;
                             }
-                            state = binding.options.invert ? END : AXIS_HALF;
+                            if(binding.options.invert) return true;
+                            else state = AXIS_HALF;
                             break;
                         }
                         case 'r':
@@ -583,7 +580,8 @@ namespace Lazynput
                                 errorsWriter.unexpectedTokenError(token);
                                 return false;
                             }
-                            state = binding.options.invert ? END : AXIS_HALF;
+                            if(binding.options.invert) return true;
+                            else state = AXIS_HALF;
                             break;
                         default:
                             if(hash == "nil"_hash)
@@ -597,29 +595,68 @@ namespace Lazynput
                     break;
                 }
                 case AXIS_HALF:
-                    switch(token[0])
+                    switch(hash)
                     {
-                        case '+':
+                        case "+"_hash:
                             binding.options.half = true;
                             break;
-                        case '-':
+                        case "-"_hash:
                             binding.options.invert = true;
                             binding.options.half = true;
                             break;
                         default:
-                            errorsWriter.unexpectedTokenError(token);
-                            return false;
+                            unparsedToken = true;
+                            break;
                     }
-                    state = END;
-                    break;
-                case END:
-                    errorsWriter.unexpectedTokenError(token);
-                    return false;
+                    return true;
             }
         }
         if(state < AXIS_HALF)
         {
             errorsWriter.error("binding not complete");
+            return false;
+        }
+        else return true;
+    }
+
+    bool Parser::parseFullBindingInput(FullBindingInfos &fullBinding)
+    {
+        fullBinding.emplace_back();
+        bool hasToken = false;
+        StrHash hash;
+        std::string token;
+        enum : uint8_t {BINDING, OPERATOR} state = BINDING;
+        while(hasToken || extractor.isNextTokenStuck())
+        {
+            switch(state)
+            {
+                case BINDING:
+                    fullBinding.back().emplace_back();
+                    if(!parseSingleBindingInput(fullBinding.back().back(), hasToken, hash, token)) return false;
+                    state = OPERATOR;
+                    break;
+                case OPERATOR:
+                    if(!hasToken) extractor.getNextToken(hash, &token);
+                    switch(hash)
+                    {
+                        case "|"_hash:
+                            state = BINDING;
+                            fullBinding.emplace_back();
+                            break;
+                        case "&"_hash:
+                            state = BINDING;
+                            break;
+                        default:
+                            errorsWriter.unexpectedTokenError(token);
+                            return false;
+                    }
+                    hasToken = false;
+                    break;
+            }
+        }
+        if(state == BINDING)
+        {
+            errorsWriter.error("binding expected");
             return false;
         }
         else return true;
@@ -633,7 +670,7 @@ namespace Lazynput
                 state = START, nextState;
         StrHash hash, prevHash, inputHash;
         std::string token, prevToken;
-        StrHashMap<BindingInfos> *tagMap;
+        StrHashMap<FullBindingInfos> *tagMap;
         std::vector<StrHash> deviceInterfaces;
         DeviceData device;
         HidIds ids, parentIds;
@@ -1003,7 +1040,7 @@ namespace Lazynput
                                 errorsWriter.error("input defined multiple times for the same config tag");
                                 return false;
                             }
-                            if(!parseBindingInput((*tagMap)[prevHash])) return false;
+                            if(!parseFullBindingInput((*tagMap)[prevHash])) return false;
                             state = TAG_OR_INPUT;
                             break;
                         default:
@@ -1031,7 +1068,7 @@ namespace Lazynput
                     }
                     if(expectToken(reinterpret_cast<uint8_t*>(&state), hash, "="_hash, token, nextState))
                         return false;
-                    if(!parseBindingInput((*tagMap)[prevHash])) return false;
+                    if(!parseFullBindingInput((*tagMap)[prevHash])) return false;
                     state = TAG_OR_INPUT;
                     break;
                 case EXPECT_EQUALS:

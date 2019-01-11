@@ -1,6 +1,7 @@
 #pragma once
 
 #include <utility>
+#include <vector>
 #include <cstdint>
 #include "StrHash.hpp"
 
@@ -52,7 +53,6 @@ namespace Lazynput
         RELATIVE_AXIS
     };
 
-
     /// \brief Additional input informations.
     struct InputOptions
     {
@@ -82,7 +82,8 @@ namespace Lazynput
         const char *label;
     };
 
-    struct BindingInfos
+    /// \brief A single device's input binding, can be a part of a AND and OR of buttons.
+    struct SingleBindingInfos
     {
         /// The type of the device's input as seen by the input library.
         InputType type;
@@ -94,11 +95,14 @@ namespace Lazynput
         InputOptions options;
     };
 
+    /// \brief Complete interface's input binding. Can be a OR (outer vector) of several ANDs (inner vectors).
+    typedef std::vector<std::vector<SingleBindingInfos>> FullBindingInfos;
+
     /// \brief Informations about an interface's input on a specific device with specific configTags.
     struct InputInfos
     {
-        /// Real input to use as seen by the input libraty.
-        BindingInfos binding;
+        /// Real inputs to use as seen by the input libraty.
+        FullBindingInfos binding;
 
         /// Label and color.
         LabelInfos labelInfos;
