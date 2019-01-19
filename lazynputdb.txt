@@ -690,12 +690,13 @@ devices
         {
             a "C", b "D", x "A", y "B"
             l1 "L1", r1 "R1", l2 "L2", r2 "R2"
-            start "Start"
+            start "Start", select "Shift", home "Analog"
         }
         default:
             dpx=h0x dpy=h0y lsx=a0 lsy=a1
-            a=b2 b=b3 x=b0 y=b1 l1=b4 r1=b5 l2=b6 r2=b7
-            start=b8
+            a=b2 b=b3 x=b0 y=b1 l1=b6 r1=b4 l2=b7 r2=b5
+            ls=b10 start=b8 select=b9 home=b11
+            # Analog sets b11 to on, digital sets it to off.
             abs0=a2 # Throttle wheel
     }
 
