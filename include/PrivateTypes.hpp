@@ -3,6 +3,7 @@
 #include <utility>
 #include <vector>
 #include <cstdint>
+#include <memory>
 #include "Types.hpp"
 #include "StrHash.hpp"
 
@@ -53,6 +54,16 @@ namespace Lazynput
         uint8_t inputIndex;
     };
 
+    /// \brief Bindings for a given config tag. Contains inner ConfigTagBindings for multiple config tags bindings.
+    struct ConfigTagBindings
+    {
+        /// Bindings for nested config tags.
+        StrHashMap<std::unique_ptr<ConfigTagBindings>> nestedConfigTags;
+
+        /// Bindings for this config tag.
+        StrHashMap<FullBindingInfos> bindings;
+    };
+
     /// \brief Internal struct to store device data
     struct DeviceData
     {
@@ -71,8 +82,8 @@ namespace Lazynput
         /// Own labels.
         StrHashMap<LabelInfosPrivate> ownLabels;
 
-        /// Bindings, outer map is config tag, inner map is interface.input.
-        StrHashMap<StrHashMap<FullBindingInfos>> bindings;
+        /// All bindings for every config tag combinations. Outer struct is for no config tag.
+        ConfigTagBindings bindings;
     };
 
     /// \brief (name, labeld) hash map to store all devices data.

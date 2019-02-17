@@ -670,7 +670,8 @@ namespace Lazynput
                 state = START, nextState;
         StrHash hash, prevHash, inputHash;
         std::string token, prevToken;
-        StrHashMap<FullBindingInfos> *tagMap;
+        std::vector<ConfigTagBindings*> tagsStack;
+        tagsStack.reserve(4);
         std::vector<StrHash> deviceInterfaces;
         DeviceData device;
         HidIds ids, parentIds;
@@ -862,7 +863,8 @@ namespace Lazynput
                             break;
                         case "default"_hash:
                             extractor.getNextToken(hash, &token);
-                            tagMap = &device.bindings[""_hash];
+                            tagsStack.clear();
+                            tagsStack.push_back(&device.bindings);
 
                             if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, ":"_hash, token, TAG_OR_INPUT))
                                 return false;
@@ -1017,7 +1019,14 @@ namespace Lazynput
                     switch(hash)
                     {
                         case ":"_hash: // The previous token should be a config tag.
-                            tagMap = &device.bindings[prevHash];
+                            tagsStack.erase(tagsStack.begin() + 1, tagsStack.end());
+                            if(tagsStack[0]->nestedConfigTags.count(prevHash))
+                            {
+                                errorsWriter.error("config tag already defined");
+                                return false;
+                            }
+                            tagsStack.push_back(new ConfigTagBindings());
+                            tagsStack[0]->nestedConfigTags[prevHash].reset(tagsStack.back());
                             state = TAG_OR_INPUT;
                             break;
                         case "."_hash: // The previous token should be an interface.
@@ -1035,12 +1044,12 @@ namespace Lazynput
                             if(prevHash == StrHash()) return false;
                             prevHash.hashCharacter('.');
                             for(const char *c = prevToken.c_str(); *c; c++) prevHash.hashCharacter(*c);
-                            if(tagMap->count(prevHash))
+                            if(tagsStack.back()->bindings.count(prevHash))
                             {
                                 errorsWriter.error("input defined multiple times for the same config tag");
                                 return false;
                             }
-                            if(!parseFullBindingInput((*tagMap)[prevHash])) return false;
+                            if(!parseFullBindingInput(tagsStack.back()->bindings[prevHash])) return false;
                             state = TAG_OR_INPUT;
                             break;
                         default:
@@ -1061,14 +1070,14 @@ namespace Lazynput
                     }
                     prevHash.hashCharacter('.');
                     for(const char *c = prevToken.c_str(); *c; c++) prevHash.hashCharacter(*c);
-                    if(tagMap->count(prevHash))
+                    if(tagsStack.back()->bindings.count(prevHash))
                     {
                         errorsWriter.error("input defined multiple times for the same config tag");
                         return false;
                     }
                     if(expectToken(reinterpret_cast<uint8_t*>(&state), hash, "="_hash, token, nextState))
                         return false;
-                    if(!parseFullBindingInput((*tagMap)[prevHash])) return false;
+                    if(!parseFullBindingInput(tagsStack.back()->bindings[prevHash])) return false;
                     state = TAG_OR_INPUT;
                     break;
                 case EXPECT_EQUALS:
@@ -1100,7 +1109,8 @@ namespace Lazynput
                 case StrHash():
                     oldDevicesDb.interfaces.insert(newDevicesDb.interfaces.begin(), newDevicesDb.interfaces.end());
                     oldDevicesDb.labels.insert(newDevicesDb.labels.begin(), newDevicesDb.labels.end());
-                    oldDevicesDb.devices.insert(newDevicesDb.devices.begin(), newDevicesDb.devices.end());
+                    for(auto it = newDevicesDb.devices.begin(); it != newDevicesDb.devices.end(); ++it)
+                            oldDevicesDb.devices[it->first] = std::move(it->second);
                     return true;
                 case "interfaces"_hash:
                     if(!parseInterfacesBlock()) return false;
