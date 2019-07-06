@@ -72,7 +72,7 @@ namespace Lazynput
             /// \param interfaces : sorted vector containing interfaces to look for, or nullptr for a preset definition.
             /// \param labels : hashmap to be filled. Can be modified even if the parsing fails.
             /// \return true if successfully parsed, false otherwise.
-            bool parseLabelsSubBlock(const std::vector<StrHash> *interfaces, StrHashMap<LabelInfosPrivate> &labels);
+            bool parseLabelsSubBlock(const std::vector<StrHash> *interfaces, StrHashMap<LabelInfos> &labels);
 
             /// \brief Parse a labels block from input stream.
             ///

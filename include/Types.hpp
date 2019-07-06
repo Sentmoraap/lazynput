@@ -78,8 +78,8 @@ namespace Lazynput
         /// Input's color if provided, dummy value otherwise.
         Color color;
 
-        /// Input's label if provided, can be null.
-        const char *label;
+        /// Input's label if provided, can be empty.
+        std::string label;
     };
 
     /// \brief A single device's input binding, can be a part of a AND and OR of buttons.

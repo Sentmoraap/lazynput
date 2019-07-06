@@ -18,19 +18,6 @@ namespace Lazynput
     /// \brief (name, interface) hash map to store all interfaces definitions.
     using InterfacesDb = StrHashMap<Interface>;
 
-    /// \brief Internal storage of a label's name and color.
-    struct LabelInfosPrivate
-    {
-        /// True if this input has a distinctive color.
-        bool hasColor : 1;
-
-        /// Input's color if provided, dummy value otherwise.
-        Color color;
-
-        /// Input's label if provided, can be null.
-        std::string label;
-    };
-
     /// \brief Labels preset.
     struct Labels
     {
@@ -38,7 +25,7 @@ namespace Lazynput
         StrHash parent;
 
         /// Own labels.
-        StrHashMap<LabelInfosPrivate> map;
+        StrHashMap<LabelInfos> map;
     };
 
     /// \brief (name, labeld) hash map to store all labels presets.
@@ -80,7 +67,7 @@ namespace Lazynput
         std::vector<StrHash> presetsLabels;
 
         /// Own labels.
-        StrHashMap<LabelInfosPrivate> ownLabels;
+        StrHashMap<LabelInfos> ownLabels;
 
         /// All bindings for every config tag combinations. Outer struct is for no config tag.
         ConfigTagBindings bindings;

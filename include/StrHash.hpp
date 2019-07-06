@@ -49,6 +49,13 @@ namespace Lazynput
                 return StrHash(hashString(str, 5381));
             }
 
+            /// \brief Computes the hash of a C++ string.
+            /// \param str : the C++ string to hash.
+            static StrHash make(const std::string &str)
+            {
+                return StrHash::make(str.c_str());
+            }
+
             /// \brief Add a character to the hashed string.
             /// Updates the hash. The new hash will be the hash of the previous string appended with the extra
             /// character.

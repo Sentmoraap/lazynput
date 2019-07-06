@@ -22,6 +22,18 @@ namespace Lazynput
             /// Devices database.
             DevicesDb devicesDb;
 
+            /// Global config tags.
+            std::vector<StrHash> globalConfigTags;
+
+            /// \brief Get a Device from it's vendor ID, product ID and optional configuration tags.
+            ///
+            /// Get device data from a vector of configTags. Is used by the public getDevice() functions.
+
+            /// \param ids : device HID ids.
+            /// \param configTags : all the config tags to use: global and extra tags given to the caller functions.
+            /// \return a Device object if found, or a dummy Device object otherwise.
+            Device getDevice(HidIds ids, const std::vector<StrHash> &configTags) const;
+
         public:
             /// \brief Set variables that apply to every device.
             ///
@@ -29,7 +41,7 @@ namespace Lazynput
             /// It uses an iterator to a container of C strings or std::strings.
             /// Teplate instanciations are provided for C arrays and some STL containers of const C strings and const
             /// std::strings.
-            /// Include DevicesDb.tpp to instanciate it with other iterators.
+            /// Include LazynputDb.tpp to instanciate it with other iterators.
             ///
             /// \param begin : an iterator to a non device-specific configuration tags container.
             /// \param end : the end iterator.
@@ -48,9 +60,9 @@ namespace Lazynput
             /// It uses an iterator to a container of C strings or std::strings.
             /// Teplate instanciations are provided for C arrays and some STL containers of const C strings and const
             /// std::strings.
-            /// Include DevicesDb.tpp to instanciate it with other iterators.
+            /// Include LazynputDb.tpp to instanciate it with other iterators.
             ///
-            /// \param vid : device vendor id.
+            /// \param ids : device HID ids.
             /// \param configTagsBegin : an iterator to a device-specific configuration tags container.
             /// \param configTagsEnd : the end iterator.
             /// \return a Device object if found, or a dummy Device object otherwise.

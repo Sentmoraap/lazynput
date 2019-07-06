@@ -222,17 +222,16 @@ namespace Lazynput
         return false;
     }
 
-    bool Parser::parseLabelsSubBlock(const std::vector<StrHash> *interfaces, StrHashMap<LabelInfosPrivate> &labels)
+    bool Parser::parseLabelsSubBlock(const std::vector<StrHash> *interfaces, StrHashMap<LabelInfos> &labels)
     {
         enum : uint8_t {LINE_START, LINE_NAME, LINE_2ND_TOKEN, LINE_COLOR, LINE_END} state = LINE_START;
         StrHash hash, labelsHash, lineHash, interfaceHash;
         std::string token, labelsName, lineName, interfaceName;
-        Labels newLabels;
-        LabelInfosPrivate *labelInfos;
+        LabelInfos *labelInfos;
         Interface *interface = nullptr;
 
         auto getLabelInput = [this, interfaces,
-                &interface, &lineHash, &interfaceHash, &lineName, &interfaceName, &newLabels, &labelInfos]()
+                &interface, &lineHash, &interfaceHash, &lineName, &interfaceName, &labels, &labelInfos]()
         {
             if(interfaces)
             {
@@ -258,12 +257,12 @@ namespace Lazynput
             lineHash = interfaceHash;
             lineHash.hashCharacter('.');
             for(const char *c = lineName.c_str(); *c; c++) lineHash.hashCharacter(*c);
-            if(newLabels.map.count(lineHash))
+            if(labels.count(lineHash))
             {
                 errorsWriter.error("label " + lineName + " defined multiple times");
                 return false;
             }
-            labelInfos = &newLabels.map[lineHash];
+            labelInfos = &labels[lineHash];
             return true;
         };
 
@@ -320,6 +319,7 @@ namespace Lazynput
                                 return false;
                             }
                             interfaceName = lineName;
+                            interfaceHash = lineHash;
                             state = LINE_END;
                             break;
                         case "."_hash:
@@ -633,6 +633,12 @@ namespace Lazynput
                 case BINDING:
                     fullBinding.back().emplace_back();
                     if(!parseSingleBindingInput(fullBinding.back().back(), hasToken, hash, token)) return false;
+                    if(fullBinding.back().back().type == InputType::NIL
+                            && (fullBinding.size() > 1 || fullBinding[0].size() > 1))
+                    {
+                        errorsWriter.error("nil input in complex binding");
+                        return false;
+                    }
                     state = OPERATOR;
                     break;
                 case OPERATOR:
@@ -659,7 +665,11 @@ namespace Lazynput
             errorsWriter.error("binding expected");
             return false;
         }
-        else return true;
+        else
+        {
+            if(fullBinding.back().back().type == InputType::NIL) fullBinding.empty();
+            return true;
+        }
     }
 
     bool Parser::parseDevicesBlock()
@@ -881,6 +891,13 @@ namespace Lazynput
                         errorsWriter.error("no device name at the end of line");
                         return false;
                     }
+                    if(token[0] != '"')
+                    {
+                        errorsWriter.unexpectedTokenError(token);
+                        return false;
+                    }
+                    token.pop_back();
+                    token.erase(0,1);
                     device.name = token;
                     state = END_OF_LINE;
                     nextState = INSIDE_DEVICE;

@@ -4,12 +4,24 @@
 #include "StrHash.hpp"
 #include "ErrorsWriter.hpp"
 #include "Parser.hpp"
+#include "LazynputDb.tpp"
 #include <fstream>
 
 using namespace Lazynput::Litterals;
 
 namespace Lazynput
 {
+    Device LazynputDb::getDevice(HidIds ids, const std::vector<StrHash> &configTags) const
+    {
+        return devicesDb.devices.count(ids) ? Device(devicesDb.devices.at(ids), devicesDb, configTags)
+                : Device();
+    }
+
+    Device LazynputDb::getDevice(HidIds ids) const
+    {
+        return getDevice(ids, globalConfigTags);
+    }
+
     bool LazynputDb::parseFromIstream(std::istream &inStream, std::ostream *errors)
     {
         Parser parser(inStream, errors, devicesDb);
