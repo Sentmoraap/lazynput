@@ -388,7 +388,7 @@ namespace Lazynput
                             labelInfos->color.r = val >> 16;
                             labelInfos->color.g = (val >> 8) & 255;
                             labelInfos->color.b = val & 255;
-                            labelInfos->hasColor = false;
+                            labelInfos->hasColor = true;
                             state = LINE_START;
                             break;
                         }

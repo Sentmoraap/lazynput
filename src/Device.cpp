@@ -1,5 +1,6 @@
 #include "Device.hpp"
 #include "PrivateTypes.hpp"
+#include <algorithm>
 
 namespace Lazynput
 {
@@ -23,14 +24,22 @@ namespace Lazynput
             inputInfos[it->first].binding = it->second;
     }
 
-    void Device::fillData(const DeviceData &deviceData, const DevicesDb &devicesDb)
+    void Device::fillBindings(const ConfigTagBindings &bindings, const std::vector<StrHash> &configTags)
     {
-        if(deviceData.parent != HidIds::invalid) fillData(devicesDb.devices.at(deviceData.parent), devicesDb);
+        fillBindings(bindings.bindings);
+        for(auto it = bindings.nestedConfigTags.begin(); it != bindings.nestedConfigTags.end(); it++)
+                if(std::find(configTags.begin(), configTags.end(), it->first) != configTags.end())
+                        fillBindings(*it->second.get(), configTags);
+    }
+
+    void Device::fillData(const DeviceData &deviceData, const DevicesDb &devicesDb,
+            const std::vector<StrHash> &configTags)
+    {
+        if(deviceData.parent != HidIds::invalid)
+                fillData(devicesDb.devices.at(deviceData.parent), devicesDb, configTags);
         for(StrHash preset : deviceData.presetsLabels) fillLabels(devicesDb.labels.at(preset), devicesDb.labels);
         fillLabels(deviceData.ownLabels);
-        // Use only the default bindings.
-        // TODO: config tags support.
-        fillBindings(deviceData.bindings.bindings);
+        fillBindings(deviceData.bindings, configTags);
     }
 
     void Device::removeNilBindings()
@@ -42,8 +51,28 @@ namespace Lazynput
     Device::Device(const DeviceData &deviceData, const DevicesDb &devicesDb, const std::vector<StrHash> &configTags)
     {
         name = deviceData.name;
-        fillData(deviceData, devicesDb);
+        fillData(deviceData, devicesDb, configTags);
         removeNilBindings();
+    }
+
+    bool Device::hasInput(StrHash hash) const
+    {
+        return inputInfos.count(hash);
+    }
+
+    bool Device::hasInput(const char *name) const
+    {
+        return hasInput(StrHash::make(name));
+    }
+
+    const InputInfos Device::getInputInfos(StrHash hash) const
+    {
+        return hasInput(hash) ? inputInfos.at(hash) : InputInfos();
+    }
+
+    const InputInfos Device::getInputInfos(const char *name) const
+    {
+        return getInputInfos(StrHash::make(name));
     }
 
     const std::string &Device::getName() const

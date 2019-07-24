@@ -41,11 +41,21 @@ namespace Lazynput
 
             /// \brief Fills bindings data from the definitions for a single device.
             ///
-            /// Fills bindings data from a given device data. It does not use the definitions from it's parents.
+            /// Fills bindings data from a given device data, for given config tags.
             /// Existing data is overwritten.
             ///
             /// \param bindings : a single device's bindings data.
             void fillBindings(const StrHashMap<FullBindingInfos> &bindings);
+
+            /// \brief Fills bindings data from the definitions for a single device.
+            ///
+            /// Fills bindings data from a given device data, It does not use the definitions from it's parents.
+            /// Is called recursively to get data from multiple/nested config tags.
+            /// Existing data is overwritten.
+            ///
+            /// \param bindings : a single device's bindings data.
+            /// \param configTags : config tags to use to extract data for this device.
+            void fillBindings(const ConfigTagBindings &bindings, const std::vector<StrHash> &configTags);
 
             /// \brief Fills own data from a given device data.
             ///
@@ -54,7 +64,9 @@ namespace Lazynput
             ///
             /// \param deviceData : data for a specific device.
             /// \param devicesDb : devices database.
-            void fillData(const DeviceData &deviceData, const DevicesDb &devicesDb);
+            /// \param configTags : config tags to use to extract data for this device.
+            void fillData(const DeviceData &deviceData, const DevicesDb &devicesDb,
+                    const std::vector<StrHash> &configTags);
 
             /// \brief Remove input infos containing nil device inputs bindings.
             ///
@@ -79,7 +91,7 @@ namespace Lazynput
             /// \brief Check if the device provides an interface's input.
             /// \param hash : a hashed string of the interface's input name, in the form interfaceName.inputName.
             /// \return true if this input is present, false otherwise.
-            bool hasInput(uint32_t hash) const;
+            bool hasInput(StrHash hash) const;
 
             /// \param name : the name of the interface's input name, in the form interfaceName.inputName.
             /// \overload hasInput
@@ -92,7 +104,7 @@ namespace Lazynput
             ///
             /// \param hash : a hashed string of the interface's input name, in the form interfaceName.inputName.
             /// \return the corresponding InputInfos if it exists or a dummy one.
-            const InputInfos getInputInfos(uint32_t hash) const;
+            const InputInfos getInputInfos(StrHash hash) const;
 
             /// \param name : the name of the interface's input name, in the form interfaceName.inputName.
             /// \overload getInputInfos
