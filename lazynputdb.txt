@@ -623,6 +623,18 @@ devices
             ls=b11 rs=b12 select=b8 start=b9 home=b10
     }
 
+    # Vendor ID 056e : Elecom
+    056e.200a
+    {
+        name = "Elecom JC-DUX60"
+        interfaces = basic_gamepad extended_gamepad extra
+        default:
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a3
+            a=b2 b=b3 c=b23 x=b0 y=b1 z=b21 l1=b4 r1=b7 l2=b8 r2=b11 l3=b12 r3=b13 l4=b5 r4=b6
+            ls=b14 rs=b15 select=b17 start=b20 capture=b19 home=b22
+            btn0=b9 btn1=b10 btn2=b16 btn3=b18
+    }
+
     # Vendor ID 0583 : Rockfire - Padix
     0583.2060
     {
