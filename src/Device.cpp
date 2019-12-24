@@ -75,9 +75,77 @@ namespace Lazynput
         return getInputInfos(StrHash::make(name));
     }
 
+    LabelInfos Device::getEnglishAsciiLabelInfos(StrHash hash) const
+    {
+        const InputInfos inputInfos = getInputInfos(hash);
+        LabelInfos ret = inputInfos.labelInfos;
+        if(ret.label[0])
+        {
+            if(ret.label[0] == '$')
+            {
+                uint8_t pos = 0;
+                while(true)
+                {
+                    switch(ret.label[++pos])
+                    {
+                        case '_':
+                            ret.label[pos - 1] = ' ';
+                            break;
+                        case 0:
+                            ret.label[pos - 1] = 0;
+                            ret.label.pop_back();
+                            return ret;
+                        default:
+                            ret.label[pos - 1] = ret.label[pos] | (pos == 1 ? 0 : 32);
+                            break;
+                    }
+                }
+            }
+            return ret;
+        }
+        const Lazynput::SingleBindingInfos &binding = inputInfos.binding[0][0];
+        ret.label.clear();
+        if(binding.options.invert && !binding.options.half) ret.label.push_back('~');
+        switch(binding.type)
+        {
+            case Lazynput::InputType::NIL:
+                // Should not happen
+                break;
+            case Lazynput::InputType::BUTTON:
+                ret.label.push_back('B');
+                ret.label += std::to_string(binding.index + 1);
+                break;
+            case Lazynput::InputType::HAT:
+                ret.label.push_back('H');
+                ret.label += std::to_string(binding.index / 2 + 1);
+                ret.label.push_back(binding.index % 2 ? 'Y' : 'X');
+                break;
+            case Lazynput::InputType::ABSOLUTE_AXIS:
+                ret.label.push_back('A');
+                ret.label += std::to_string(binding.index + 1);
+                break;
+            case Lazynput::InputType::RELATIVE_AXIS:
+                ret.label.push_back('R');
+                ret.label += std::to_string(binding.index + 1);
+                break;
+        }
+        if(binding.options.half) std::cout << (binding.options.invert ? "-" : "+");
+        return ret;
+    }
+
+    LabelInfos Device::getEnglishAsciiLabelInfos(const char *name) const
+    {
+        return getEnglishAsciiLabelInfos(StrHash::make(name));
+    }
+
     const std::string &Device::getName() const
     {
         return name;
+    }
+
+    void Device::setName(const char *name)
+    {
+        this->name = std::string(name);
     }
 
     Device::operator bool() const

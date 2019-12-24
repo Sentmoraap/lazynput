@@ -87,6 +87,7 @@ namespace Lazynput
             Device(const DeviceData &deviceData, const DevicesDb &devicesDb, const std::vector<StrHash> &configTags);
 
             Device(Device &&) = default;
+            Device& operator=(Device &&) = default;
 
             /// \brief Check if the device provides an interface's input.
             /// \param hash : a hashed string of the interface's input name, in the form interfaceName.inputName.
@@ -110,9 +111,33 @@ namespace Lazynput
             /// \overload getInputInfos
             const InputInfos getInputInfos(const char *name) const;
 
+            /// \brief Get an english ASCII displayable label based on the label infos.
+            ///
+            /// A simple way to get an english string to display the input label. If it's a dollar name supposed to
+            /// be replaced by an icon, it's replaced by an english string. If the input doesn't have a label, it
+            /// returns 'A', 'B', 'H' or 'R' folowed by the input number starting at 1 and eventual modifiers.
+            /// If it's a complex binding, it returns only the first input.
+            /// If it's not bound, it returns "Nothing".
+            ///
+            /// \param hash : a hashed string of the interface's input name, in the form interfaceName.inputName.
+            /// \return A displayable LabelInfos based on the input's InputInfos.
+            LabelInfos getEnglishAsciiLabelInfos(StrHash hash) const;
+
+            /// \param name : the name of the interface's input name, in the form interfaceName.inputName.
+            /// \overload getEnglishAsciiLabelInfos
+            LabelInfos getEnglishAsciiLabelInfos(const char *name) const;
+
             /// \brief Get device's name.
             /// \return The device's name.
             const std::string &getName() const;
+
+            /// \brief Set the device's name
+            ///
+            /// When a device is not in the database, the input library may provide a name.
+            //
+            /// \param name : the new device's name
+            void setName(const char *name);
+
 
             /// \brief Check if the device corresponds to a real database entry or is a dummy one.
             /// \return true if it's a real device, false if it's a dummy one.
