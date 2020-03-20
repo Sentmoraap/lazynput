@@ -115,6 +115,49 @@ labels
 
         extended_gamepad:
         home    "$HOME"
+        capture "$CIRCLE_IN_SQUARE"
+    }
+
+    nintendo_64
+    {
+        # The joystick is considered as the left joystik. Z is l2.
+        basic_gamepad:
+        a       "A"                         0749B4
+        b       "$TRIANGLE_FILLED_DOWN"     FFE400
+        x       "B"                         00BC8E
+        y       "$TRIANGLE_FILLED_LEFT"     FFE400
+        l1      "L"
+        r1      "R"
+        l2      "Z"
+        start   "Start"                     FECE15
+
+        extended_gamepad:
+        c       "$TRIANGLE_FILLED_RIGHT"    FFE400
+        z       "$TRIANGLE_FILLED_UP"       FFE400
+    }
+
+    nintendo_gamecube
+    {
+        # Due to it's unsual layout, ABXY are mapped as if it's a diamond-shaped Nintendo controller.
+        # There is not a good way to map the triggers. Here, L & R are l2 & r2, Z is r1.
+        # Axes with clicks are not supported. For now they should be mapped on l3 & r3 and called "DL" & "DR"
+
+        basic_gamepad:
+        a       "B"         FF0000
+        b       "A"         00BC8E
+        x       "Y"
+        y       "X"
+        l1      "ZL"        5600AE
+        r1      "Z"         5600AE  # Must be overriden by "ZR" when there are two bumpers.
+        l2      "L"
+        r2      "R"
+        start  "Start/Pause"
+        rsx     "C"         FFE400
+        rsy     "C"         FFE400
+
+        extended_gamepad:
+        l3      "DL"
+        r3      "DR"
     }
 
     ps1
@@ -190,7 +233,7 @@ labels
     {
         basic_gamepad:
         select   "$XBOX_VIEW"
-        start    "$HAMBURGER_MENU"
+        start    "$HAMBURGER"   # Actually it looks more like a croque monsieur.
     }
 }
 
@@ -227,6 +270,55 @@ devices
             a=b0 b=b1 x=b2 y=b3 l1=b4 r1=b5 l2=a2 r2=a5
             ls=b9 rs=b10 select=b6 start=b7 home=b8
     }
+    # End of base controllers
+
+    # Vendor ID 0079 : DragonRise
+    0079.0006
+    {
+        # It looks that those IDs are used by a lot of cheap USB controllers, with different names and designs.
+        # They usually have 1 2 3 4 buttons with Playstation colours.
+        interfaces = basic_gamepad
+        labels =
+        {
+            a       nil     7EABE2
+            b       nil     E23838
+            x       nil     D08ED2
+            y       nil     49DA7C
+            # Triggers are labeled "1" and "2". To differentiate them, they are here named L1 R1 L2 R2 like on
+            # Playstation controllers.
+            l1      "L1"
+            r1      "R1"
+            l2      "L2"
+            r2      "R2"
+            select  "Select"
+            start   "Start"
+            # Because the labels are based on the Playstation controllers, shoudl ls and rs be named "L3" and "R3"?
+        }
+        default:
+            # The gamepad has an analog button. When it's turned of, the joystick are mapped to digital inputs.
+            # This mapping assumes that analog is turned on.
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a3
+            a=b2 b=b1 x=b3 y=b0 l1=b4 r1=b5 l2=b6 r2=b7
+            ls=b10 rs=b11 select=b8 start=b9
+    }
+
+    # 0079.181c : several controllers, including gamepad and arcade sticks.
+
+
+    0079.1843
+    {
+        name = "Mayflash GameCube Controller Adapter"
+        interfaces = basic_gamepad extended_gamepad
+        labels = nintendo_gamecube
+        default:
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a5
+            a=b1 b=b2 x=b3 y=b0 r1=b7 l2=a3 r2=a4 l3=b4 r3=b5
+            start=b9
+    }
+
+
+
+    0079.1844 : 0079.1843 { }
 
     # Vendor ID 044f : Thrustmaster
     044f.044f : 045e.028e
@@ -623,6 +715,10 @@ devices
             ls=b11 rs=b12 select=b8 start=b9 home=b10
     }
 
+    054c.09cc : 054c.05c4 {}
+
+    054c.0ba0 : 054c.05c4 {}
+
     # Vendor ID 056e : Elecom
     056e.200a
     {
@@ -634,6 +730,24 @@ devices
             ls=b14 rs=b15 select=b17 start=b20 capture=b19 home=b22
             btn0=b9 btn1=b10 btn2=b16 btn3=b18
     }
+
+    # Vendor ID 057e : Nintendo
+
+    #057e.2006 : Joy-Con L. Needs a way to use it as a partial and as a full controller.
+    #057e.2007 : Joy-Con R
+
+    057e.2009
+    {
+        name = "Nintendo Switch Pro Controller"
+        interfaces = basic_gamepad extended_gamepad
+        labels = nintendo_modern
+        default:
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a3
+            a=b0 b=b1 x=b2 y=b3 l1=b4 r1=b5 l2=b6 r2=b7
+            ls=b10 rs=b11 select=b8 start=b9 home=b12 capture=b13
+    }
+
+    # 057e.200e : joy-con charging grip TODO
 
     # Vendor ID 0583 : Rockfire - Padix
     0583.2060
@@ -858,6 +972,69 @@ devices
 
     # 0738.8520 : Mad Catz FightPad PRO (PS4). See 0738.3250
 
+
+    0810.0001 : 0079.0006 {}
+
+    0810.0003 : 0079.0006 {}
+
+    0e8f.0003 : 0079.0006 {}
+
+    # Vendor ID 0f0d : Hori
+    0f0d.0092
+    {
+        name = "Pokken Controller"
+        interfaces = basic_gamepad extended_gamepad
+        labels = nintendo_classic +
+        {
+            capture "ZL"
+            home    "ZR"
+        }
+        default:
+            dpx=h0x dpy=h0y
+            a=b1 b=b2 x=b0 y=b3 l1=b4 r1=b5
+            select=b8 start=b9 capture=b6 home=b7
+    }
+
+    0f0d.00c1
+    {
+        name = "Horipad switch"
+        interfaces = basic_gamepad extended_gamepad
+        labels = nintendo_modern
+        default:
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a3
+            a=b1 b=b2 x=b0 y=b3 l1=b4 r1=b5 l2=b6 r2=b7
+            select=b8 start=b9 capture=b12 home=b13 ls=b10 rs=b11
+    }
+
+    11ff.3331
+    {
+        name = "Tomee N64 USB controller"
+        interfaces = basic_gamepad extended_gamepad
+        labels = nintendo_64
+        default:
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1
+            a=b5 b=b2 c=b1 x=b4 y=b3 z=b0 l1=b6 r1=b7 l2=b8
+            start=b9
+    }
+
+    # Vendor ID 146b : Bigben Interactive
+    146b.0d01
+    {
+        name = "Revolution Pro Controller"
+        interfaces = basic_gamepad extended_gamepad
+        labels = ps4
+        default:
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a5
+            a=b1 b=b2 x=b0 y=b3 l1=b4 r1=b5 l2=a3 r2=a4
+            select=b8 start=b9 ls=b10 rs=b11 home=b12
+
+    }
+
+    146b.0d02 : 146b.0d01
+    {
+        name = "Revolution Pro Controller 2"
+    }
+
     1d79.0301
     {
         name = "Wii classic controller adapter for PC USB"
@@ -869,4 +1046,54 @@ devices
             ls=b10 rs=b11
             select=b8 start=b9 home=b10
     }
+
+    # Vendor ID 18d1 : Google
+    # I don't know the mapping of all the buttons, left commented for now
+    #18d1.9400
+    #{
+    #    name = "Stadia Controller"
+    #    interfaces = basic_gamepad extended_gapepad
+    #    labels =
+    #    {
+    #        a       "A"
+    #        b       "B"
+    #        x       "X"
+    #        y       "Y"
+    #        l1      "L1"
+    #        r1      "R1"
+    #        l2      "L2"
+    #        r2      "R2"
+    #        select  "$ELLIPSIS"
+    #        start   "$HAMBURGER"
+    #        home    "$STADIA_LOGO"
+    #        capture "$SQUARE_CROSSHAIR"
+    #    }
+    #}
+
+    20d6.a711
+    {
+        name = "Core (Plus) Wired Controller"
+        interfaces = basic_gamepad extended_gamepad
+        labels = nintendo_modern
+        default:
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1
+            a=b1 b=b2 x=b0 y=b3 l1=b4 r1=b5 l2=b6 r2=b7
+            ls=b10 rs=b11 select=b8 home=b12 capture=b13
+    }
+
+    2563.0523 : 0079.0006 {}
+
+    2563.0526
+    {
+        interfaces = basic_gamepad extended_gamepad
+        # Cheap USB controllers, labels may be playstation or xbox.
+        default:
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a3 rsy=a4
+            a=b0 b=b1 x=b3 y=b4 l1=b6 r1=b7 l2=b8 r2=b9
+            select=b10 start=b11 home=b12 ls=b13 rs=b14
+    }
+
+    # TODO: 2563.0575
+    # Can be a PS3 knockoff controller or a Neo-Geo mini pad. Those are too different to have the same mappings.
+    # It needs a way to differentiate between controllers.
 }
