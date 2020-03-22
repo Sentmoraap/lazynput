@@ -4,8 +4,8 @@
 #include "StrHash.hpp"
 #include "ErrorsWriter.hpp"
 #include "Parser.hpp"
-#include "LazynputDb.tpp"
 #include <fstream>
+#include <string.h>
 
 using namespace Lazynput::Litterals;
 
@@ -15,6 +15,21 @@ namespace Lazynput
     {
         return devicesDb.devices.count(ids) ? Device(devicesDb.devices.at(ids), devicesDb, configTags)
                 : Device();
+    }
+
+    void LazynputDb::setGlobalConfigTags(const StrHash *hashs, int size)
+    {
+        globalConfigTags.resize(size);
+        memcpy(globalConfigTags.data(), hashs, size * sizeof(StrHash));
+    }
+
+    Device LazynputDb::getDevice(HidIds ids, const StrHash *hashs, int size)
+    const
+    {
+        // TODO: handle duplicate tags
+        std::vector<StrHash> configTags = globalConfigTags;
+        for(int i = 0; i < size; i++) configTags.push_back(hashs[i]);
+        return getDevice(ids, configTags);
     }
 
     Device LazynputDb::getDevice(HidIds ids) const

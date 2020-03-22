@@ -38,36 +38,21 @@ namespace Lazynput
             /// \brief Set variables that apply to every device.
             ///
             /// Set variales that can be used to use device mapping overrides when they are provided.
-            /// It uses an iterator to a container of C strings or std::strings.
-            /// Teplate instanciations are provided for C arrays and some STL containers of const C strings and const
-            /// std::strings.
-            /// Include LazynputDb.tpp to instanciate it with other iterators.
             ///
-            /// \param begin : an iterator to a non device-specific configuration tags container.
-            /// \param end : the end iterator.
-            template<class ForwardIteratorType>
-            void setGlobalConfigTags(ForwardIteratorType begin, ForwardIteratorType end);
-
-            /// \brief Check if the database contains a device.
-            /// \param ids : device HID ids.
-            /// \return true if the device is present in the database, false otherwise.
-            bool hasDevice(HidIds ids) const;
+            /// \param configTags : a pointer to an array of hashed strings.
+            /// \param size : the array size.
+            void setGlobalConfigTags(const StrHash *configTags, int size);
 
             /// \brief Get a Device from it's vendor ID, product ID and optional configuration tags.
             ///
             /// Finds in the database the Device data of the corresponding HID IDs.
             /// The Device's mappings will be set according to the database info and the configuration tags list.
-            /// It uses an iterator to a container of C strings or std::strings.
-            /// Teplate instanciations are provided for C arrays and some STL containers of const C strings and const
-            /// std::strings.
-            /// Include LazynputDb.tpp to instanciate it with other iterators.
             ///
             /// \param ids : device HID ids.
-            /// \param configTagsBegin : an iterator to a device-specific configuration tags container.
-            /// \param configTagsEnd : the end iterator.
+            /// \param hashs : a pointer to an array of hashed strings.
+            /// \param size : the array size.
             /// \return a Device object if found, or a dummy Device object otherwise.
-            template<class ForwardIteratorType>
-            Device getDevice(HidIds ids, ForwardIteratorType configTagsBegin, ForwardIteratorType configTagsEnd) const;
+            Device getDevice(HidIds ids, const StrHash *configTags, int size) const;
 
             /// \overload getDevice
             Device getDevice(HidIds ids) const;

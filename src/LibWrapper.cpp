@@ -38,6 +38,7 @@ namespace Lazynput
 
     float LibWrapper::getInputValue(uint8_t device, StrHash hash) const
     {
+        if(getDeviceStatus(device) == DeviceStatus::DISCONNECTED) return 0.f;
         float value = -1.f;
         const FullBindingInfos &binding = getDevice(device).getInputInfos(hash).binding;
         if(binding.empty()) return 0.f;

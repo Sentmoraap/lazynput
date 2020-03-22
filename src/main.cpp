@@ -115,6 +115,16 @@ int main(int argc, char **argv)
     // Lazynput
     Lazynput::LazynputDb lazynputDb;
     lazynputDb.parseFromFile("../lazynputdb.txt", &std::cerr);
+    #if __linux__ // Linux kernel, GNU/Linux or Android.
+    Lazynput::StrHash tag = "linux"_hash;
+    lazynputDb.setGlobalConfigTags(&tag, 1);
+    #elif _WIN32 // Windows, 32 or 64 bits.
+    Lazynput::StrHash tag = "windows"_hash;
+    lazynputDb.setGlobalConfigTags(&tag, 1);
+    #elif __APPLE__ // MacOS & iOS.
+    Lazynput::StrHash tag = "apple"_hash;
+    lazynputDb.setGlobalConfigTags(&tag, 1);
+    #endif
     Lazynput::SfmlWrapper sfmlWrapper(lazynputDb);
     Lazynput::LibWrapper &libWrapper = sfmlWrapper; // To be sure this program uses only the parent class interface.
 
@@ -133,7 +143,7 @@ int main(int argc, char **argv)
         // Update
         float time = clock.getElapsedTime().asSeconds() * FRAME_RATE;
         if(time < prevTime + 1.f) sf::sleep(sf::seconds((prevTime + 1.f - time) / FRAME_RATE));
-          pauseAction.update(libWrapper.getInputValue(0, "basic_gamepad.start"_hash));
+        pauseAction.update(libWrapper.getInputValue(0, "basic_gamepad.start"_hash));
         if(pauseAction.newPressed) paused = !paused;
         if(paused) prevTime = time;
         while(prevTime + 1.f <= time)
