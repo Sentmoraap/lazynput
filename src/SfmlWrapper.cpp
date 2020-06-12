@@ -9,7 +9,6 @@ namespace Lazynput
     SfmlWrapper::SfmlWrapper(const LazynputDb &lazynputDb) : LibWrapper(lazynputDb)
     {
         configTags.push_back("sfml"_hash);
-        // TODO: set global config tags
     }
 
     float SfmlWrapper::getAbsValue(uint8_t device, uint8_t axis) const
@@ -44,12 +43,9 @@ namespace Lazynput
                     sf::Joystick::Identification joystickId = sf::Joystick::getIdentification(i);
                     devicesData[i].device = std::move(lazynputDb.getDevice(Lazynput::HidIds{
                             static_cast<uint16_t>(joystickId.vendorId), static_cast<uint16_t>(joystickId.productId)}));
-                    if(devicesData[i].device) devicesData[i].status = DeviceStatus::SUPPORTED;
-                    else
-                    {
-                        devicesData[i].status = DeviceStatus::UNSUPPORTED;
+                    devicesData[i].status = devicesData[i].device ? DeviceStatus::SUPPORTED : DeviceStatus::UNSUPPORTED;
+                    if(devicesData[i].device.getName().empty())
                         devicesData[i].device.setName(joystickId.name.toAnsiString().c_str());
-                    }
                 }
             }
             else if(devicesData.size() > i) devicesData[i].status = DeviceStatus::DISCONNECTED;
