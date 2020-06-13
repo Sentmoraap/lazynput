@@ -84,6 +84,14 @@ namespace Lazynput
             if(ret.label[0] == '$')
             {
                 uint8_t pos = 0;
+                while(ret.label[++pos]) if(ret.label[pos] == ' ')
+                {
+                    uint8_t offset = pos + 1;
+                    while(ret.label[++pos]) ret.label[pos - offset] = ret.label[pos];
+                    ret.label.resize(pos - offset);
+                    return ret;
+                }
+                pos = 0;
                 while(true)
                 {
                     switch(ret.label[++pos])

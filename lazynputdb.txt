@@ -114,8 +114,8 @@ labels
         start   "+"
 
         extended_gamepad:
-        home    "$HOME"
-        capture "$CIRCLE_IN_SQUARE"
+        home    "$HOME Home"
+        capture "$CIRCLE_IN_SQUARE Capture"
     }
 
     nintendo_64
@@ -123,17 +123,17 @@ labels
         # The joystick is considered as the left joystik. Z is l2.
         basic_gamepad:
         a       "A"                         0749B4
-        b       "$TRIANGLE_FILLED_DOWN"     FFE400
+        b       "$TRIANGLE_FILLED_DOWN C\/" FFE400
         x       "B"                         00BC8E
-        y       "$TRIANGLE_FILLED_LEFT"     FFE400
+        y       "$TRIANGLE_FILLED_LEFT C<"  FFE400
         l1      "L"
         r1      "R"
         l2      "Z"
         start   "Start"                     FECE15
 
         extended_gamepad:
-        c       "$TRIANGLE_FILLED_RIGHT"    FFE400
-        z       "$TRIANGLE_FILLED_UP"       FFE400
+        c       "$TRIANGLE_FILLED_RIGHT C>" FFE400
+        z       "$TRIANGLE_FILLED_UP C/\"   FFE400
     }
 
     nintendo_gamecube
@@ -163,10 +163,10 @@ labels
     ps1
     {
         basic_gamepad:
-        a       "$CROSS"    7EABE2
-        b       "$CIRCLE"   E23838
-        x       "$SQUARE"   D08ED2
-        y       "$TRIANGLE" 49DA7C
+        a       "$CROSS X"      7EABE2
+        b       "$CIRCLE O"     E23838
+        x       "$SQUARE []"    D08ED2
+        y       "$TRIANGLE /\"  49DA7C
         l1      "L1"
         r1      "R1"
         l2      "L2"
@@ -180,17 +180,19 @@ labels
     ps3 : ps1
     {
         extended_gamepad:
-        home    "$PS_LOGO"
+        home    "$PS_LOGO PS"
     }
 
     ps4 : ps3
     {
+        # The touchpad may not be mapped as a gamepad button. For now let's map Share to select, and if it's available
+        # map the touchpad to the capture button.
         basic_gamepad:
-        select  "$TOUCHPAD"
+        select  "Share"
         start   "Options"
 
         extended_gamepad:
-        capture "Share"
+        capture "Touchpad"
     }
 
     xbox_base
@@ -222,18 +224,18 @@ labels
         r2      "RT"
         ls      "LS"
         rs      "RS"
-        select  "Back"
-        start   "Start"
+        select  "$TRIANGLE_FILLED_LEFT Back"
+        start   "$TRIANGLE_FILLER_RIGHT Start"
 
         extended_gamepad:
-        home    "$XBOX_LOGO"
+        home    "$XBOX_LOGO Guide"
     }
 
     xbox_one : xbox_360
     {
         basic_gamepad:
-        select   "$XBOX_VIEW"
-        start    "$HAMBURGER"   # Actually it looks more like a croque monsieur.
+        select   "$XBOX_VIEW View"
+        start    "$HAMBURGER Menu"   # Actually it looks more like a croque monsieur.
     }
 }
 
@@ -708,11 +710,11 @@ devices
         default:
             dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a5
             a=b1 b=b2 x=b0 y=b3 l1=b4 r1=b5 l2=a3 r2=a4 #l2=b6 r2=b7
-            ls=b10 rs=b11 select=b8 start=b9 home=b12
+            ls=b10 rs=b11 select=b8 start=b9 home=b12 capture=b13
         linux:
             rsx=a3 rsy=a4
             a=b0 b=b1 x=b3 y=b2 l1=b4 r1=b5 l2=a2 r2=a5
-            ls=b11 rs=b12 select=b8 start=b9 home=b10
+            ls=b11 rs=b12 start=b9 capture=b8 home=b10
     }
 
     054c.09cc : 054c.05c4 {}
