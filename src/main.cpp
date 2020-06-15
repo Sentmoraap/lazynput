@@ -1,8 +1,14 @@
 #include <iostream>
 #include "LazynputDb.hpp"
-#include "SfmlWrapper.hpp"
 #include <math.h>
 #include <SFML/Graphics.hpp>
+
+#ifdef USE_SDL
+#include <SDL2/SDL.h>
+#include "SdlWrapper.hpp"
+#else
+#include "SfmlWrapper.hpp"
+#endif
 
 using namespace Lazynput::Litterals;
 
@@ -125,8 +131,16 @@ int main(int argc, char **argv)
     Lazynput::StrHash tag = "apple"_hash;
     lazynputDb.setGlobalConfigTags(&tag, 1);
     #endif
-    Lazynput::SfmlWrapper sfmlWrapper(lazynputDb);
-    Lazynput::LibWrapper &libWrapper = sfmlWrapper; // To be sure this program uses only the parent class interface.
+
+    #ifdef USE_SDL
+        SDL_Init(SDL_INIT_GAMECONTROLLER);
+        SDL_GameControllerAddMappingsFromFile("./gamecontrollerdb.txt");
+        Lazynput::SdlWrapper sdlWrapper(lazynputDb);
+        Lazynput::LibWrapper &libWrapper = sdlWrapper;
+    #else
+        Lazynput::SfmlWrapper sfmlWrapper(lazynputDb);
+        Lazynput::LibWrapper &libWrapper = sfmlWrapper; // To be sure this program uses only the parent class interface.
+    #endif
 
     // Main loop
     while(window.isOpen())
@@ -237,7 +251,10 @@ int main(int argc, char **argv)
         {
             const Lazynput::Device &device = libWrapper.getDevice(0);
             text.setPosition(0, 0);
-            text.setString(device.getName());
+            sf::String deviceName(device.getName());
+            if(libWrapper.getDeviceStatus(0) == Lazynput::LibWrapper::DeviceStatus::FALLBACK)
+                deviceName += " [fallback]";
+            text.setString(deviceName);
             window.draw(text);
             float lineHeight = TEXT_SIZE * GAME_SCALE;
             if(libWrapper.getDeviceStatus(0) == Lazynput::LibWrapper::DeviceStatus::UNSUPPORTED)
@@ -264,6 +281,7 @@ int main(int argc, char **argv)
                 auto drawInputText = [&text, &window, &device, &defaultTextColor, lineHeight]
                         (uint8_t line, const char *str, Lazynput::StrHash hash)
                 {
+                    if(!device.hasInput(hash)) return;
                     text.setFillColor(defaultTextColor);
                     text.setString(str);
                     text.setPosition(0, line * lineHeight);

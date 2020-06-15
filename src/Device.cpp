@@ -156,6 +156,11 @@ namespace Lazynput
         this->name = std::string(name);
     }
 
+    void Device::setInputInfos(StrHashMap<InputInfos> &&inputInfos)
+    {
+        this->inputInfos = std::move(inputInfos);
+    }
+
     Device::operator bool() const
     {
         return !inputInfos.empty();

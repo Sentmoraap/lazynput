@@ -135,9 +135,16 @@ namespace Lazynput
             ///
             /// When a device is not in the database, the input library may provide a name.
             //
-            /// \param name : the new device's name
+            /// \param name : the new device's name.
             void setName(const char *name);
 
+            /// \brief Set the devie's input infos
+            ///
+            /// Replaces the device's own input infos by the one one provided. This is used when a library wrapper
+            /// provides fallback mappings.
+            ///
+            /// \param inputInfos : the new input infos.
+            void setInputInfos(StrHashMap<InputInfos> &&inputInfos);
 
             /// \brief Check if the device corresponds to a real database entry or is a dummy one.
             /// \return true if it's a real device, false if it's a dummy one.

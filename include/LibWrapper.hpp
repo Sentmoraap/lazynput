@@ -43,7 +43,7 @@ namespace Lazynput
             struct DeviceData
             {
                 /// If the input library detects a connected joystick for that index.
-                DeviceStatus status;
+                DeviceStatus status = DeviceStatus::DISCONNECTED;
 
                 /// Device mappings and labels.
                 Device device;
