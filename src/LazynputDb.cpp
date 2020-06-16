@@ -53,13 +53,39 @@ namespace Lazynput
         }
         else
         {
-            if(errors) *errors << "Error : can't open file " << path << "\n";
+            if(errors) *errors << "Error: can't open file " << path << "\n";
             return false;
         }
     }
 
-    bool LazynputDb::parseFromDefaultFile(std::ostream *errors)
+    bool LazynputDb::parseFromDefault(std::ostream *errors)
     {
-        return parseFromFile(""/*Utils::getHomeDirectory()*/, errors);
+        const char *path = nullptr;
+        char str[256];
+        #ifdef __linux__
+            path = std::getenv("XDG_DATA_HOME");
+            if(!path) path = std::getenv("HOME");
+            snprintf(str, 256, "%s/.local/share", path);
+            path = str;
+        #endif
+        #ifdef TARGET_OS_MAC
+            snprintf(str, 256, "~/Library");
+        #endif
+        #ifdef _WIN32
+            path = std::getenv("LOCALAPPDATA");
+        #endif
+        if(path)
+        {
+            if(path == str) strcat(str, "/lazynput/lazynputdb.txt");
+            else snprintf(str, 256, "%s/lazynput/lazynputdb.txt", path);
+            std::fstream file;
+            file.open(str, std::fstream::in);
+            if(file.is_open()) return parseFromIstream(file, errors);
+        }
+        std::fstream file;
+        file.open("lazynputdb.txt");
+        if(file.is_open()) return parseFromIstream(file, errors);
+        if(errors) *errors << "Error: no file found\n";
+        return false;
     }
 }

@@ -75,13 +75,13 @@ namespace Lazynput
             /// \return true if successfully parsed, false otherwise.
             bool parseFromFile(const char *path, std::ostream *errors = nullptr);
 
-            /// \brief Parse data from the default file.
+            /// \brief Parse data from the default file locations.
             ///
-            /// Parse config data from .lazynputdb in the home directory. Existing devices data will be overrided.
+            /// Looks for a file in the system-specific user data folder and in the working directory.
+            /// Existing devices data will be overrided.
             ///
-            /// \param path : the path to the file.
             /// \param errors : a stream to write parsing errors, if any. Can be null.
             /// \return true if successfully parsed, false otherwise.
-            bool parseFromDefaultFile(std::ostream *errors = nullptr);
+            bool parseFromDefault(std::ostream *errors = nullptr);
     };
 }

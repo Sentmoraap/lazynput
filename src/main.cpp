@@ -84,6 +84,9 @@ enum GameInput
     MAX = QUIT
 };
 
+// Map inputs to both an interface input and a unmapped button number.
+// A game that uses Lazynput should handle devices not present in the database.
+// An input config menu is needed but it's outside the scope of this example.
 static const InputMapping inputMappings[7] =
 {
     {"Jump", "basic_gamepad.a"_hash, 0},
@@ -151,17 +154,7 @@ int main(int argc, char **argv)
 
     // Lazynput
     Lazynput::LazynputDb lazynputDb;
-    lazynputDb.parseFromFile("../lazynputdb.txt", &std::cerr);
-    #if __linux__ // Linux kernel, GNU/Linux or Android.
-    Lazynput::StrHash tag = "linux"_hash;
-    lazynputDb.setGlobalConfigTags(&tag, 1);
-    #elif _WIN32 // Windows, 32 or 64 bits.
-    Lazynput::StrHash tag = "windows"_hash;
-    lazynputDb.setGlobalConfigTags(&tag, 1);
-    #elif __APPLE__ // MacOS & iOS.
-    Lazynput::StrHash tag = "apple"_hash;
-    lazynputDb.setGlobalConfigTags(&tag, 1);
-    #endif
+    lazynputDb.parseFromDefault(&std::cerr);
 
     #ifdef USE_SDL
         SDL_Init(SDL_INIT_GAMECONTROLLER);
