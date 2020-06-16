@@ -13,8 +13,11 @@ namespace Lazynput
     /// It's public interface contains the methods to call to get an input device state in place of using directly an
     /// input library. If a device is not in the Lazynput database this class can get mappings from another source or
     /// expose unmapped devices.
-    /// It calls it's private methods to use an input library. Child classes should override those methods to make a
-    /// functioning wrapper.
+    /// It contains methode to read unmapped device inputs with the underlying library. It calls those methods to
+    /// provide the interface inputs, but they can also be called directly when a device doesn't have mappings.
+    /// Child classes should override those methods to make a functioning wrapper.
+    /// getNumXxx() methods are used only for the latter purpose, you don't need to override them when you write a
+    /// wrapper only for the former purpose.
 
     class LazynputDb;
     class Device;
@@ -58,31 +61,6 @@ namespace Lazynput
             /// Database, to get devices data.
             const LazynputDb &lazynputDb;
 
-            /// \brief Gets the position of a device's absolute axis.
-            /// \param device : the device slot.
-            /// \param axis : the device's absolute axis number.
-            /// \return the axis position in [-1; 1].
-            virtual float getAbsValue(uint8_t device, uint8_t axis) const {return 0.f;}
-
-            /// \brief Gets the state of a device's button.
-            /// \param device : the device slot.
-            /// \param btn : the device's button number.
-            /// \return true if pressed, false if released.
-            virtual bool getBtnPressed(uint8_t device, uint8_t btn) const {return false;}
-
-            /// \brief Gets the position of a device's hat switch/POV.
-            /// \param device : the device slot.
-            /// \param hat : the device's hat number.
-            /// \return a (X, Y) pair, each axis in [-1; 1].
-            virtual std::pair<float, float> getHatValues(uint8_t device, uint8_t hat) const
-                    {return std::make_pair(0.f, 0.f);}
-
-            /// \brief Gets the difference of a device's relative axis since it's last update.
-            /// \param device : the device slot.
-            /// \param hat : the device's relative axis number.
-            /// \return the difference since the last update.
-            virtual float getRelDelta(uint8_t device, uint8_t rel) const {return 0.f;}
-
         public:
             /// \brief Constructor. The wrappers need to use a database.
             /// This constructor also adds some OS config tags using preprocessor macros.
@@ -123,6 +101,52 @@ namespace Lazynput
             /// \param name : the name of the interface's input name, in the form interfaceName.inputName.
             /// \overload getInputValue
             float getInputValue(uint8_t device, const char *name) const;
+
+            /// \brief Get a device's number of absolute axes.
+            /// \param device : the device slot.
+            /// \return the number of absolute axes.
+            virtual uint8_t getNumAbs(uint8_t device) const {return 0;}
+
+            /// \brief Gets the position of a device's absolute axis.
+            /// \param device : the device slot.
+            /// \param axis : the device's absolute axis number.
+            /// \return the axis position in [-1; 1].
+            virtual float getAbsValue(uint8_t device, uint8_t axis) const {return 0.f;}
+
+            /// \brief Get a device's number of buttons.
+            /// \param device : the device slot.
+            /// \return the number of buttons.
+            virtual uint8_t getNumBtn(uint8_t device) const {return 0;}
+
+            /// \brief Gets the state of a device's button.
+            /// \param device : the device slot.
+            /// \param btn : the device's button number.
+            /// \return true if pressed, false if released.
+            virtual bool getBtnPressed(uint8_t device, uint8_t btn) const {return false;}
+
+            /// \brief Get a device's number of hat switches.
+            /// \param device : the device slot.
+            /// \return the number of hat switches.
+            virtual uint8_t getNumHat(uint8_t device) const {return 0;}
+
+            /// \brief Gets the position of a device's hat switch/POV.
+            /// \param device : the device slot.
+            /// \param hat : the device's hat number.
+            /// \return a (X, Y) pair, each axis in [-1; 1].
+            virtual std::pair<float, float> getHatValues(uint8_t device, uint8_t hat) const
+                    {return std::make_pair(0.f, 0.f);}
+
+            /// \brief Get a device's number of relative axes.
+            /// \param device : the device slot.
+            /// \return the number of relative axes.
+            virtual uint8_t getNumRel(uint8_t device) const {return 0;}
+
+            /// \brief Gets the difference of a device's relative axis since it's last update.
+            /// \param device : the device slot.
+            /// \param hat : the device's relative axis number.
+            /// \return the difference since the last update.
+            virtual float getRelDelta(uint8_t device, uint8_t rel) const {return 0.f;}
+
 
     };
 }

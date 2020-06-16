@@ -11,6 +11,13 @@ namespace Lazynput
         configTags.push_back("sfml"_hash);
     }
 
+    uint8_t SfmlWrapper::getNumAbs(uint8_t device) const
+    {
+        uint8_t num = 0;
+        while(num < sf::Joystick::PovX && sf::Joystick::hasAxis(device, static_cast<sf::Joystick::Axis>(num))) num++;
+        return num;
+    }
+
     float SfmlWrapper::getAbsValue(uint8_t device, uint8_t axis) const
     {
         return axis < sf::Joystick::PovX
@@ -18,9 +25,19 @@ namespace Lazynput
                 : 0.f;
     }
 
+    uint8_t SfmlWrapper::getNumBtn(uint8_t device) const
+    {
+        return sf::Joystick::getButtonCount(device);
+    }
+
     bool SfmlWrapper::getBtnPressed(uint8_t device, uint8_t btn) const
     {
         return sf::Joystick::isButtonPressed(device, btn);
+    }
+
+    uint8_t SfmlWrapper::getNumHat(uint8_t device) const
+    {
+        return sf::Joystick::hasAxis(device, sf::Joystick::PovX) ? 1 : 0;
     }
 
     std::pair<float, float> SfmlWrapper::getHatValues(uint8_t device, uint8_t hat) const

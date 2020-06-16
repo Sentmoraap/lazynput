@@ -12,6 +12,11 @@ namespace Lazynput
         devicesData.resize(MAX_JOYSTICKS);
     }
 
+    uint8_t SdlWrapper::getNumAbs(uint8_t device) const
+    {
+        return SDL_JoystickNumAxes(joysticks[device]);
+    }
+
     float SdlWrapper::getAbsValue(uint8_t device, uint8_t axis) const
     {
         int16_t val = SDL_JoystickGetAxis(joysticks[device], axis);
@@ -19,9 +24,19 @@ namespace Lazynput
         return val / 32767.f;
     }
 
+    uint8_t SdlWrapper::getNumBtn(uint8_t device) const
+    {
+        return SDL_JoystickNumButtons(joysticks[device]);
+    }
+
     bool SdlWrapper::getBtnPressed(uint8_t device, uint8_t btn) const
     {
         return SDL_JoystickGetButton(joysticks[device], btn);
+    }
+
+    uint8_t SdlWrapper::getNumHat(uint8_t device) const
+    {
+        return SDL_JoystickNumHats(joysticks[device]);
     }
 
     std::pair<float, float> SdlWrapper::getHatValues(uint8_t device, uint8_t hat) const
@@ -33,6 +48,11 @@ namespace Lazynput
         if(hatState & SDL_HAT_UP) y = -1;
         else if(hatState & SDL_HAT_DOWN) y = 1;
         return std::make_pair(x, y);
+    }
+
+    uint8_t SdlWrapper::getNumRel(uint8_t device) const
+    {
+        return SDL_JoystickNumBalls(joysticks[device]) * 2;
     }
 
     float SdlWrapper::getRelDelta(uint8_t device, uint8_t rel) const
