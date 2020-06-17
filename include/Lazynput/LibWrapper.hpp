@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 #include <vector>
-#include "Device.hpp"
+#include "Lazynput/Device.hpp"
 
 namespace Lazynput
 {

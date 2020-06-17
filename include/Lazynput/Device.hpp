@@ -2,8 +2,8 @@
 
 #include <cstdint>
 #include <iostream>
-#include "Types.hpp"
-#include "PrivateTypes.hpp"
+#include "Lazynput/Types.hpp"
+#include "Lazynput/PrivateTypes.hpp"
 
 namespace Lazynput
 {

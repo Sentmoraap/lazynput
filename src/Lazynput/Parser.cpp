@@ -1,10 +1,10 @@
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
-#include "Parser.hpp"
-#include "StrHash.hpp"
-#include "PrivateTypes.hpp"
-#include "Utils.hpp"
+#include "Lazynput/Parser.hpp"
+#include "Lazynput/StrHash.hpp"
+#include "Lazynput/PrivateTypes.hpp"
+#include "Lazynput/Utils.hpp"
 
 using namespace Lazynput::Litterals;
 

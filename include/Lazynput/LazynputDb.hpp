@@ -3,10 +3,10 @@
 #include <cstdint>
 #include <iostream>
 #include <vector>
-#include "Device.hpp"
-#include "Types.hpp"
-#include "PrivateTypes.hpp"
-#include "StrHash.hpp"
+#include "Lazynput/Device.hpp"
+#include "Lazynput/Types.hpp"
+#include "Lazynput/PrivateTypes.hpp"
+#include "Lazynput/StrHash.hpp"
 
 namespace Lazynput
 {

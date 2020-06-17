@@ -1,5 +1,5 @@
-#include "SdlWrapper.hpp"
-#include "LazynputDb.hpp"
+#include "Lazynput/Wrappers/SdlWrapper.hpp"
+#include "Lazynput/LazynputDb.hpp"
 #include <SDL2/SDL_events.h>
 
 namespace Lazynput

@@ -3,7 +3,7 @@
 #include <utility>
 #include <vector>
 #include <cstdint>
-#include "StrHash.hpp"
+#include "Lazynput/StrHash.hpp"
 
 /// \file Types.hpp
 /// \brief Types definitions for devices database.

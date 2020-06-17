@@ -1,4 +1,4 @@
-#include "ErrorsWriter.hpp"
+#include "Lazynput/ErrorsWriter.hpp"
 
 namespace Lazynput
 {

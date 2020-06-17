@@ -1,8 +1,8 @@
 #pragma once
 
-#include "PrivateTypes.hpp"
-#include "TokenExtractor.hpp"
-#include "ErrorsWriter.hpp"
+#include "Lazynput/PrivateTypes.hpp"
+#include "Lazynput/TokenExtractor.hpp"
+#include "Lazynput/ErrorsWriter.hpp"
 
 namespace Lazynput
 {

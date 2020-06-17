@@ -1,6 +1,6 @@
 #pragma once
 
-#include "LibWrapper.hpp"
+#include "Lazynput/LibWrapper.hpp"
 #include <SDL2/SDL_joystick.h>
 
 namespace Lazynput

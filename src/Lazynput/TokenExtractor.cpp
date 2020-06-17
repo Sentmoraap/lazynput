@@ -1,7 +1,7 @@
-#include "TokenExtractor.hpp"
-#include "StrHash.hpp"
-#include "ErrorsWriter.hpp"
-#include "Utils.hpp"
+#include "Lazynput/TokenExtractor.hpp"
+#include "Lazynput/StrHash.hpp"
+#include "Lazynput/ErrorsWriter.hpp"
+#include "Lazynput/Utils.hpp"
 #include <limits>
 
 namespace Lazynput

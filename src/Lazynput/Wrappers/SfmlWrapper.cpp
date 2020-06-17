@@ -1,5 +1,5 @@
-#include "SfmlWrapper.hpp"
-#include "LazynputDb.hpp"
+#include "Lazynput/Wrappers/SfmlWrapper.hpp"
+#include "Lazynput/LazynputDb.hpp"
 #include <SFML/Window/Joystick.hpp>
 
 namespace Lazynput

@@ -1,14 +1,14 @@
 #include <iostream>
-#include "LazynputDb.hpp"
+#include "Lazynput/LazynputDb.hpp"
 #include <math.h>
 #include <SFML/Graphics.hpp>
 #include <functional>
 
 #ifdef USE_SDL
 #include <SDL2/SDL.h>
-#include "SdlWrapper.hpp"
+#include "Lazynput/Wrappers/SdlWrapper.hpp"
 #else
-#include "SfmlWrapper.hpp"
+#include "Lazynput/Wrappers/SfmlWrapper.hpp"
 #endif
 
 using namespace Lazynput::Litterals;

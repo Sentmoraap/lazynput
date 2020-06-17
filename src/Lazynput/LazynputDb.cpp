@@ -1,9 +1,9 @@
-#include "LazynputDb.hpp"
-#include "Utils.hpp"
-#include "TokenExtractor.hpp"
-#include "StrHash.hpp"
-#include "ErrorsWriter.hpp"
-#include "Parser.hpp"
+#include "Lazynput/LazynputDb.hpp"
+#include "Lazynput/Utils.hpp"
+#include "Lazynput/TokenExtractor.hpp"
+#include "Lazynput/StrHash.hpp"
+#include "Lazynput/ErrorsWriter.hpp"
+#include "Lazynput/Parser.hpp"
 #include <fstream>
 #include <string.h>
 

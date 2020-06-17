@@ -1,5 +1,5 @@
-#include "Device.hpp"
-#include "PrivateTypes.hpp"
+#include "Lazynput/Device.hpp"
+#include "Lazynput/PrivateTypes.hpp"
 #include <algorithm>
 
 namespace Lazynput

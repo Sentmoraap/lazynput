@@ -1,4 +1,4 @@
-#include "LibWrapper.hpp"
+#include "Lazynput/LibWrapper.hpp"
 
 namespace Lazynput
 {

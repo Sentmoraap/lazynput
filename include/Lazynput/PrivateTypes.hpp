@@ -4,8 +4,8 @@
 #include <vector>
 #include <cstdint>
 #include <memory>
-#include "Types.hpp"
-#include "StrHash.hpp"
+#include "Lazynput/Types.hpp"
+#include "Lazynput/StrHash.hpp"
 
 /// \file PrivateTypes.hpp
 /// \brief Types used internally.
