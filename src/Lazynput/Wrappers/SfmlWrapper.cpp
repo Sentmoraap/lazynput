@@ -1,3 +1,5 @@
+#ifdef LAZYNPUT_USE_SFML_WRAPPER
+
 #include "Lazynput/Wrappers/SfmlWrapper.hpp"
 #include "Lazynput/LazynputDb.hpp"
 #include <SFML/Window/Joystick.hpp>
@@ -69,3 +71,6 @@ namespace Lazynput
         }
     }
 }
+
+#endif // LAZYNPUT_USE_SFML_WRAPPER
+

@@ -57,6 +57,18 @@ namespace Lazynput
             /// \overload getDevice
             Device getDevice(HidIds ids) const;
 
+            /// \brief Gets the interface input string corresponding to the hash.
+            ///
+            /// \param hash : the hashed "interfaceName.inputName" string.
+            /// \return : the unhashed string.
+            std::string getStringFromHash(StrHash hash) const;
+
+            /// \brief Gets an interface input type from it's hash.
+            ///
+            /// \param hash : the hashed "interfaceName.inputName" string.
+            /// \return : the interface input type.
+            InterfaceInputType getInterfaceInputType(StrHash hash) const;
+
             /// \brief Parse data from an input stream.
             ///
             /// Parse config data from a text input stream. Existing devices data will be overrided.

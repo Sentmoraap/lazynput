@@ -50,23 +50,23 @@ namespace Lazynput
                 float singleValue;
                 switch(singleBinding.type)
                 {
-                    case Lazynput::InputType::NIL:
+                    case Lazynput::DeviceInputType::NIL:
                         // Should not happen
                         singleValue = 0;
                         break;
-                    case Lazynput::InputType::BUTTON:
+                    case Lazynput::DeviceInputType::BUTTON:
                         singleValue = getBtnPressed(device, singleBinding.index) ? 1.f : 0.f;
                         break;
-                    case Lazynput::InputType::HAT:
+                    case Lazynput::DeviceInputType::HAT:
                     {
                         std::pair<float, float> values = getHatValues(device, singleBinding.index / 2);
                         singleValue = singleBinding.index % 2 ? values.second : values.first;
                         break;
                     }
-                    case Lazynput::InputType::ABSOLUTE_AXIS:
+                    case Lazynput::DeviceInputType::ABSOLUTE_AXIS:
                         singleValue = getAbsValue(device, singleBinding.index);
                         break;
-                    case Lazynput::InputType::RELATIVE_AXIS:
+                    case Lazynput::DeviceInputType::RELATIVE_AXIS:
                         singleValue = getRelDelta(device, singleBinding.index);
                         break;
                 }

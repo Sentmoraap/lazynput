@@ -37,6 +37,40 @@ namespace Lazynput
         return getDevice(ids, globalConfigTags);
     }
 
+    std::string LazynputDb::getStringFromHash(StrHash hash) const
+    {
+        try
+        {
+            return devicesDb.stringFromHash.at(hash);
+        }
+        catch(std::exception&)
+        {
+            return "";
+        }
+    }
+
+    InterfaceInputType LazynputDb::getInterfaceInputType(StrHash hash) const
+    {
+        std::string str = getStringFromHash(hash);
+        if(str.empty()) return InterfaceInputType::NIL;
+        else
+        {
+            uint8_t length = str.length();
+            uint8_t pos = 0;
+            while(str[pos] != '.' && pos < length) pos++;
+            str[pos] = 0;
+            if(pos >= length) return InterfaceInputType::NIL;
+            try
+            {
+                return devicesDb.interfaces.at(StrHash::make(str)).at(StrHash::make(str.c_str() + pos + 1));
+            }
+            catch(std::exception&)
+            {
+                return InterfaceInputType::NIL;
+            }
+        }
+    }
+
     bool LazynputDb::parseFromIstream(std::istream &inStream, std::ostream *errors)
     {
         Parser parser(inStream, errors, devicesDb);

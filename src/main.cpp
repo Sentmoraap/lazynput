@@ -69,7 +69,6 @@ struct InputMapping
 {
     char name[16];
     Lazynput::StrHash hash;
-    uint8_t button;
 };
 
 enum GameInput
@@ -84,18 +83,18 @@ enum GameInput
     MAX = QUIT
 };
 
-// Map inputs to both an interface input and a unmapped button number.
-// A game that uses Lazynput should handle devices not present in the database.
+// Map inputs to both a interface input. Unsupported devices will also have interface input mappings for the
+// programmer's convinience, but those mappings can be wrong.
 // An input config menu is needed but it's outside the scope of this example.
 static const InputMapping inputMappings[7] =
 {
-    {"Jump", "basic_gamepad.a"_hash, 0},
-    {"Shoot", "basic_gamepad.x"_hash, 2},
-    {"Slash", "basic_gamepad.b"_hash, 1},
-    {"Dash left", "basic_gamepad.l1"_hash, 4},
-    {"Dash right", "basic_gamepad.r1"_hash, 5},
-    {"Pause", "basic_gamepad.start"_hash, 9},
-    {"Quit", "basic_gamepad.select"_hash, 8}
+    {"Jump", "basic_gamepad.a"_hash},
+    {"Shoot", "basic_gamepad.x"_hash},
+    {"Slash", "basic_gamepad.b"_hash},
+    {"Dash left", "basic_gamepad.l1"_hash},
+    {"Dash right", "basic_gamepad.r1"_hash},
+    {"Pause", "basic_gamepad.start"_hash},
+    {"Quit", "basic_gamepad.select"_hash}
 };
 
 int main(int argc, char **argv)
@@ -176,11 +175,9 @@ int main(int argc, char **argv)
             if(event.type == sf::Event::Closed) window.close();
         }
         libWrapper.update();
-        bool isSupported = libWrapper.getDeviceStatus(0) != Lazynput::LibWrapper::DeviceStatus::UNSUPPORTED;
-        auto getGameInput = [&libWrapper, isSupported](GameInput gi)
+        auto getGameInput = [&libWrapper](GameInput gi)
         {
-            return isSupported ? libWrapper.getInputValue(0, inputMappings[gi].hash) > 0
-                    : libWrapper.getBtnPressed(0, inputMappings[gi].button);
+            return libWrapper.getInputValue(0, inputMappings[gi].hash) > 0;
         };
         if(getGameInput(GameInput::QUIT)) window.close();
 
@@ -194,9 +191,8 @@ int main(int argc, char **argv)
         while(prevTime + 1.f <= time)
         {
             // Read inputs
-            float dx = isSupported ? (libWrapper.getInputValue(0, "basic_gamepad.dpx"_hash)
-                    + libWrapper.getInputValue(0, "basic_gamepad.lsx"_hash))
-                    : (libWrapper.getAbsValue(0, 0) + libWrapper.getHatValues(0, 0).first);
+            float dx = libWrapper.getInputValue(0, "basic_gamepad.dpx"_hash)
+                    + libWrapper.getInputValue(0, "basic_gamepad.lsx"_hash);
             if(dx < -1) dx = -1; else if(dx > 1) dx = 1;
             dx *= CHARACTER_SPEED;
             if(dx > 0) moveDirec = 1; else if(dx < 0) moveDirec = -1;
@@ -284,15 +280,16 @@ int main(int argc, char **argv)
             const Lazynput::Device &device = libWrapper.getDevice(0);
             text.setPosition(0, 0);
             sf::String deviceName(device.getName());
-            if(libWrapper.getDeviceStatus(0) == Lazynput::LibWrapper::DeviceStatus::FALLBACK)
+            Lazynput::LibWrapper::DeviceStatus deviceStatus = libWrapper.getDeviceStatus(0);
+            if(deviceStatus == Lazynput::LibWrapper::DeviceStatus::FALLBACK)
                 deviceName += " [fallback]";
-            if(!isSupported)
+            else if(deviceStatus == Lazynput::LibWrapper::DeviceStatus::UNSUPPORTED)
                 deviceName += " [unsupported]";
             text.setString(deviceName);
             window.draw(text);
             float lineHeight = TEXT_SIZE * GAME_SCALE;
-            bool hasDpad = isSupported ? device.hasInput("basic_gamepad.dpx"_hash) : libWrapper.getNumHat(0);
-            bool hasJoystick = isSupported ? device.hasInput("basic_gamepad.lsx"_hash) : libWrapper.getNumAbs(0);
+            bool hasDpad = device.hasInput("basic_gamepad.dpx"_hash);
+            bool hasJoystick = device.hasInput("basic_gamepad.lsx"_hash);
             text.setString("Move");
             text.setPosition(0, lineHeight);
             window.draw(text);
@@ -307,21 +304,12 @@ int main(int argc, char **argv)
             for(uint8_t i = 0; i <= GameInput::MAX; i++)
             {
                 text.setPosition(INPUT_TEXT_X * GAME_SCALE, (i + 2) * lineHeight);
-                if(isSupported)
-                {
-                    if(!device.hasInput(inputMappings[i].hash)) continue;
-                    Lazynput::LabelInfos labelInfos = device.getEnglishAsciiLabelInfos(inputMappings[i].hash);
-                    text.setString(labelInfos.label);
-                    if(labelInfos.hasColor)
-                            text.setFillColor(sf::Color(labelInfos.color.r, labelInfos.color.g, labelInfos.color.b));
-                    window.draw(text);
-                }
-                else
-                {
-                    if(inputMappings[i].button >= libWrapper.getNumBtn(0)) continue;
-                    text.setString(std::string("B") + std::to_string(inputMappings[i].button + 1));
-                    window.draw(text);
-                }
+                if(!device.hasInput(inputMappings[i].hash)) continue;
+                Lazynput::LabelInfos labelInfos = device.getEnglishAsciiLabelInfos(inputMappings[i].hash);
+                text.setString(labelInfos.label);
+                if(labelInfos.hasColor)
+                        text.setFillColor(sf::Color(labelInfos.color.r, labelInfos.color.g, labelInfos.color.b));
+                window.draw(text);
                 text.setFillColor(defaultTextColor);
                 text.setString(inputMappings[i].name);
                 text.setPosition(0, (i + 2) * lineHeight);

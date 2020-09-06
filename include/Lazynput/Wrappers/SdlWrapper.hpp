@@ -1,25 +1,30 @@
 #pragma once
 
+#ifdef LAZYNPUT_USE_SDL_WRAPPER
+
 #include "Lazynput/LibWrapper.hpp"
 #include <SDL2/SDL_joystick.h>
 
 namespace Lazynput
 {
-    /// \class SdlW0.rapper
+    /// \class SdlWrapper
     /// \brief Wraps SDL joysticks functions to mappings-aware functions.
     ///
     /// This class uses the SDL_Joystick api to get unmapped inputs. If the device is not present in the Lazynput
     /// database, it uses SDL_Gamecontroller as a fallback database.
     class SdlWrapper final : public LibWrapper
     {
-        private:
+        public:
             static constexpr uint8_t MAX_JOYSTICKS = 16;
+
+        private:
             static constexpr uint8_t MAX_REL_AXES = 16;
 
             SDL_Joystick *joysticks[MAX_JOYSTICKS] = {0};
             float relAxes[MAX_JOYSTICKS][MAX_REL_AXES];
 
         public:
+
             SdlWrapper(const LazynputDb &lazynputDb);
             void update() override;
 
@@ -33,3 +38,5 @@ namespace Lazynput
             float getRelDelta(uint8_t device, uint8_t rel) const override;
     };
 }
+
+#endif // LAZYNPUT_USE_SDL_WRAPPER

@@ -13,7 +13,7 @@
 namespace Lazynput
 {
     /// \brief (name, type) hash map to store an interface definition.
-    using Interface = StrHashMap<InputType>;
+    using Interface = StrHashMap<InterfaceInputType>;
 
     /// \brief (name, interface) hash map to store all interfaces definitions.
     using InterfacesDb = StrHashMap<Interface>;
@@ -30,16 +30,6 @@ namespace Lazynput
 
     /// \brief (name, labeld) hash map to store all labels presets.
     using LabelsDb = StrHashMap<Labels>;
-
-    /// \brief Store one input mapping for one config tag (or none).
-    struct InputData
-    {
-        /// The type of the device's input as seen by the input library.
-        InputType inputType;
-
-        /// Index as seen by the input library.
-        uint8_t inputIndex;
-    };
 
     /// \brief Bindings for a given config tag. Contains inner ConfigTagBindings for multiple config tags bindings.
     struct ConfigTagBindings
@@ -82,6 +72,9 @@ namespace Lazynput
     {
         /// Interface definitions.
         InterfacesDb interfaces;
+
+        /// String from hash
+        StrHashMap<std::string> stringFromHash;
 
         /// Labels presets.
         LabelsDb labels;

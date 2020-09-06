@@ -43,8 +43,17 @@ namespace Lazynput
             }
     };
 
+    /// \brief An interface's input type.
+    enum class InterfaceInputType : uint8_t
+    {
+        NIL,
+        BUTTON,
+        ABSOLUTE_AXIS,
+        RELATIVE_AXIS
+    };
+
     /// \brief A device's input type.
-    enum class InputType : uint8_t
+    enum class DeviceInputType : uint8_t
     {
         NIL,
         BUTTON,
@@ -86,7 +95,7 @@ namespace Lazynput
     struct SingleBindingInfos
     {
         /// The type of the device's input as seen by the input library.
-        InputType type;
+        DeviceInputType type;
 
         /// Index as seen by the input library. For hat switches, is index * 2, + 1 for the y axis.
         uint8_t index;

@@ -111,28 +111,29 @@ namespace Lazynput
             }
             return ret;
         }
+        if(inputInfos.binding.empty()) return LabelInfos();
         const Lazynput::SingleBindingInfos &binding = inputInfos.binding[0][0];
         ret.label.clear();
         if(binding.options.invert && !binding.options.half) ret.label.push_back('~');
         switch(binding.type)
         {
-            case Lazynput::InputType::NIL:
+            case Lazynput::DeviceInputType::NIL:
                 // Should not happen
                 break;
-            case Lazynput::InputType::BUTTON:
+            case Lazynput::DeviceInputType::BUTTON:
                 ret.label.push_back('B');
                 ret.label += std::to_string(binding.index + 1);
                 break;
-            case Lazynput::InputType::HAT:
+            case Lazynput::DeviceInputType::HAT:
                 ret.label.push_back('H');
                 ret.label += std::to_string(binding.index / 2 + 1);
                 ret.label.push_back(binding.index % 2 ? 'Y' : 'X');
                 break;
-            case Lazynput::InputType::ABSOLUTE_AXIS:
+            case Lazynput::DeviceInputType::ABSOLUTE_AXIS:
                 ret.label.push_back('A');
                 ret.label += std::to_string(binding.index + 1);
                 break;
-            case Lazynput::InputType::RELATIVE_AXIS:
+            case Lazynput::DeviceInputType::RELATIVE_AXIS:
                 ret.label.push_back('R');
                 ret.label += std::to_string(binding.index + 1);
                 break;

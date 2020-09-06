@@ -67,7 +67,7 @@ namespace Lazynput
     bool Parser::parseInterfacesBlock()
     {
         enum : uint8_t {START, INSIDE_BLOCK, INTERFACE_START, INSIDE_INTERFACE, INPUT_TYPE_COLON} state = START;
-        InputType inputType = InputType::BUTTON;
+        InterfaceInputType inputType = InterfaceInputType::BUTTON;
         bool inputTypeDefined = true;
         StrHash hash, interfaceHash;
         std::string token, interfaceName;
@@ -129,17 +129,17 @@ namespace Lazynput
                     switch(hash)
                     {
                         case "btn"_hash:
-                            inputType = InputType::BUTTON;
+                            inputType = InterfaceInputType::BUTTON;
                             inputTypeDefined = true;
                             state = INPUT_TYPE_COLON;
                             break;
                         case "abs"_hash:
-                            inputType = InputType::ABSOLUTE_AXIS;
+                            inputType = InterfaceInputType::ABSOLUTE_AXIS;
                             inputTypeDefined = true;
                             state = INPUT_TYPE_COLON;
                             break;
                         case "rel"_hash:
-                            inputType = InputType::RELATIVE_AXIS;
+                            inputType = InterfaceInputType::RELATIVE_AXIS;
                             inputTypeDefined = true;
                             state = INPUT_TYPE_COLON;
                             break;
@@ -196,7 +196,13 @@ namespace Lazynput
                                             errorsWriter.error("input " + token + " defined multiple times");
                                             return false;
                                         }
-                                        else newInterface[hash] = inputType;
+                                        else
+                                        {
+                                            newInterface[hash] = inputType;
+                                            std::string completeName = interfaceName + "." + token;
+                                            newDevicesDb.stringFromHash[StrHash::make(completeName)] =
+                                                    std::move(completeName);
+                                        }
                                     }
                                 }
                                 else
@@ -543,18 +549,18 @@ namespace Lazynput
                     switch(token[0])
                     {
                         case 'a':
-                            binding.type = InputType::ABSOLUTE_AXIS;
+                            binding.type = DeviceInputType::ABSOLUTE_AXIS;
                             if(*(parseInputIndex())) return false;
                             if(binding.options.invert) return true;
                             else state = AXIS_HALF;
                             break;
                         case 'b':
-                            binding.type = InputType::BUTTON;
+                            binding.type = DeviceInputType::BUTTON;
                             if(*(parseInputIndex())) return false;
                             return true;
                         case 'h':
                         {
-                            binding.type = InputType::HAT;
+                            binding.type = DeviceInputType::HAT;
                             const char *endChar = parseInputIndex();
                             binding.index *= 2;
                             switch(*endChar)
@@ -574,7 +580,7 @@ namespace Lazynput
                             break;
                         }
                         case 'r':
-                            binding.type = InputType::RELATIVE_AXIS;
+                            binding.type = DeviceInputType::RELATIVE_AXIS;
                             if(*(parseInputIndex()))
                             {
                                 errorsWriter.unexpectedTokenError(token);
@@ -586,7 +592,7 @@ namespace Lazynput
                         default:
                             if(hash == "nil"_hash)
                             {
-                                binding.type = InputType::NIL;
+                                binding.type = DeviceInputType::NIL;
                                 return true;
                             }
                             errorsWriter.error("unknown input " + token);
@@ -633,7 +639,7 @@ namespace Lazynput
                 case BINDING:
                     fullBinding.back().emplace_back();
                     if(!parseSingleBindingInput(fullBinding.back().back(), hasToken, hash, token)) return false;
-                    if(fullBinding.back().back().type == InputType::NIL
+                    if(fullBinding.back().back().type == DeviceInputType::NIL
                             && (fullBinding.size() > 1 || fullBinding[0].size() > 1))
                     {
                         errorsWriter.error("nil input in complex binding");
@@ -667,7 +673,7 @@ namespace Lazynput
         }
         else
         {
-            if(fullBinding.back().back().type == InputType::NIL) fullBinding.empty();
+            if(fullBinding.back().back().type == DeviceInputType::NIL) fullBinding.empty();
             return true;
         }
     }
@@ -1125,6 +1131,8 @@ namespace Lazynput
             {
                 case StrHash():
                     oldDevicesDb.interfaces.insert(newDevicesDb.interfaces.begin(), newDevicesDb.interfaces.end());
+                    oldDevicesDb.stringFromHash.insert(newDevicesDb.stringFromHash.begin(),
+                            newDevicesDb.stringFromHash.end());
                     oldDevicesDb.labels.insert(newDevicesDb.labels.begin(), newDevicesDb.labels.end());
                     for(auto it = newDevicesDb.devices.begin(); it != newDevicesDb.devices.end(); ++it)
                             oldDevicesDb.devices[it->first] = std::move(it->second);

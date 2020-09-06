@@ -15,7 +15,8 @@ can be made for the most common cases like labels from a popular game console.
 
 It can be used like an input library with the use of a wrapper class. Wrappers are provided for SDL and SFML but it can
 be used with other input libraries as long as they provide joystick identification data. It can use less fully featured
-databases like SDL_GameController as a fallback.
+databases like SDL_GameController as a fallback. It also provides default, probably wrong mappings when a device is not
+present in any database so you can still read inputs the same way.
 
 ## Non-goals
 This library does not provide dead zone, saturation nor any other calibration setting.
@@ -24,8 +25,9 @@ Lazẏnput does not map inputs to actions. You have to bring your own input mana
 mappings does not remove the usefulness of an input manager.
 
 ## Install
-Clone this repo and copy the files in `src/Lazynput` and `include/Lazynput` somewhere in your project directory. Copy
-the wrappers you need.
+Clone this repo and copy the files in `src/Lazynput` and `include/Lazynput` somewhere in your project directory. Or
+make it a submodule. The main.cpp example program is outside those folders on purpose. Define a
+`LAZYNPUT_USE_XXX_WRAPPER` macro (replace `XXX`) to compile one of the included wrappers.
 
 ## Usage
 The initialization looks like this:

@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef LAZYNPUT_USE_SFML_WRAPPER
+
 #include "Lazynput/LibWrapper.hpp"
 
 namespace Lazynput
@@ -20,3 +22,5 @@ namespace Lazynput
             std::pair<float, float> getHatValues(uint8_t device, uint8_t hat) const override;
     };
 }
+
+#endif // LAZYNPUT_USE_SFML_WRAPPER
