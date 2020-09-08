@@ -4,7 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include <functional>
 
-#ifdef USE_SDL
+#ifdef LAZYNPUT_USE_SDL_WRAPPER
 #include <SDL2/SDL.h>
 #include "Lazynput/Wrappers/SdlWrapper.hpp"
 #else
@@ -155,7 +155,7 @@ int main(int argc, char **argv)
     Lazynput::LazynputDb lazynputDb;
     lazynputDb.parseFromDefault(&std::cerr);
 
-    #ifdef USE_SDL
+    #ifdef LAZYNPUT_USE_SDL_WRAPPER
         SDL_Init(SDL_INIT_GAMECONTROLLER);
         SDL_GameControllerAddMappingsFromFile("./gamecontrollerdb.txt");
         Lazynput::SdlWrapper sdlWrapper(lazynputDb);

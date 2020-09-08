@@ -4,7 +4,7 @@ of how the inputs are actually numbered. It can also provide button names and co
 controller button instead of a number or the Xbox equivalent.
 
 A device can implement one or several interfaces. For now the interfaces are `basic_gamepad` and `extended_gamepad`. In
-the future it could work with other device such as steering wheels and flight sticks.
+the future it could work with other devices such as steering wheels and flight sticks.
 
 By default the mappings are supposed to be the same everywhere unless specified otherwise. A device can provide mappings
 for specific environments with the use of config tags.

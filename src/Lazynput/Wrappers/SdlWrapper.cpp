@@ -115,12 +115,12 @@ namespace Lazynput
             if(devicesData[slot].device) devicesData[slot].status = DeviceStatus::SUPPORTED;
             else
             {
-                devicesData[slot].device = Device();
-                StrHashMap<InputInfos> inputInfos;
                 // For now SDL doesn't expose it's SDL_ExtendedGameControllerBind structure, so the fallback
                 // mappings are more limited than what SDL_GameController is actually capable to do.
                 if(SDL_IsGameController(slot))
                 {
+                    devicesData[slot].device = Device();
+                    StrHashMap<InputInfos> inputInfos;
                     devicesData[slot].status = DeviceStatus::FALLBACK;
                     SDL_GameController *controller = SDL_GameControllerOpen(slot);
                     auto setBinding = [](SDL_GameControllerButtonBind bind, SingleBindingInfos &singleBinding)
@@ -213,87 +213,13 @@ namespace Lazynput
                             "basic_gamepad.dpy"_hash);
 
                     SDL_GameControllerClose(controller);
+                    devicesData[slot].device.setInputInfos(std::move(inputInfos));
                 }
                 else
                 {
                     // Provide default mappings so the wrapper can be used the same way for unsupported devices.
-                    devicesData[slot].status = DeviceStatus::UNSUPPORTED;
-                    auto bindInput = [&inputInfos](uint8_t input, StrHash hash, DeviceInputType type)
-                    {
-                        InputInfos &inputInfo = inputInfos[hash];
-                        inputInfo.binding.emplace_back();
-                        inputInfo.binding.back().emplace_back();
-                        SingleBindingInfos &singleBinding = inputInfo.binding.back().back();
-                        singleBinding.options.half = false;
-                        singleBinding.options.invert = false;
-                        singleBinding.type = type;
-                        singleBinding.index = input;
-                    };
-                    auto bindButton = [&bindInput](uint8_t button, StrHash hash)
-                    {
-                        bindInput(button, hash, DeviceInputType::BUTTON);
-                    };
-                    auto bindAxis = [&bindInput](uint8_t axis, StrHash hash)
-                    {
-                        bindInput(axis, hash, DeviceInputType::ABSOLUTE_AXIS);
-                    };
-                    switch(SDL_JoystickNumButtons(js))
-                    {
-                        default:
-                        case 32: bindButton(31, "extra.btn11"_hash);
-                        case 31: bindButton(30, "extra.btn10"_hash);
-                        case 30: bindButton(29, "extra.btn9"_hash);
-                        case 29: bindButton(28, "extra.btn8"_hash);
-                        case 28: bindButton(27, "extra.btn7"_hash);
-                        case 27: bindButton(26, "extra.btn6"_hash);
-                        case 26: bindButton(25, "extra.btn5"_hash);
-                        case 25: bindButton(24, "extra.btn4"_hash);
-                        case 24: bindButton(23, "extra.btn3"_hash);
-                        case 23: bindButton(22, "extra.btn2"_hash);
-                        case 22: bindButton(21, "extra.btn1"_hash);
-                        case 21: bindButton(20, "extra.btn0"_hash);
-                        case 20: bindButton(19, "extended_gamepad.capture"_hash);
-                        case 19: bindButton(18, "extended_gamepad.home"_hash);
-                        case 18: bindButton(17, "extended_gamepad.r4"_hash);
-                        case 17: bindButton(16, "extended_gamepad.l4"_hash);
-                        case 16: bindButton(15, "extended_gamepad.r3"_hash);
-                        case 15: bindButton(14, "extended_gamepad.l3"_hash);
-                        case 14: bindButton(13, "extended_gamepad.z"_hash);
-                        case 13: bindButton(12, "extended_gamepad.c"_hash);
-                        case 12: bindButton(11, "basic_gamepad.rs"_hash);
-                        case 11: bindButton(10, "basic_gamepad.ls"_hash);
-                        case 10: bindButton( 9, "basic_gamepad.start"_hash);
-                        case  9: bindButton( 8, "basic_gamepad.select"_hash);
-                        case  8: bindButton( 7, "basic_gamepad.r2"_hash);
-                        case  7: bindButton( 6, "basic_gamepad.l2"_hash);
-                        case  6: bindButton( 5, "basic_gamepad.r1"_hash);
-                        case  5: bindButton( 4, "basic_gamepad.l1"_hash);
-                        case  4: bindButton( 3, "basic_gamepad.y"_hash);
-                        case  3: bindButton( 2, "basic_gamepad.x"_hash);
-                        case  2: bindButton( 1, "basic_gamepad.b"_hash);
-                        case  1: bindButton( 0, "basic_gamepad.a"_hash);
-                        case  0:;
-                    }
-                    switch(SDL_JoystickNumAxes(js))
-                    {
-                        default:
-                        case  8: bindAxis( 7, "extra.abs3"_hash);
-                        case  7: bindAxis( 6, "extra.abs2"_hash);
-                        case  6: bindAxis( 5, "extra.abs1"_hash);
-                        case  5: bindAxis( 4, "extra.abs0"_hash);
-                        case  4: bindAxis( 3, "basic_gamepad.rsy"_hash);
-                        case  3: bindAxis( 2, "basic_gamepad.rsx"_hash);
-                        case  2: bindAxis( 1, "basic_gamepad.lsy"_hash);
-                        case  1: bindAxis( 0, "basic_gamepad.lsx"_hash);
-                        case  0:;
-                    }
-                    if(SDL_JoystickNumHats(js))
-                    {
-                        bindInput(0, "basic_gamepad.dpx"_hash, DeviceInputType::HAT);
-                        bindInput(1, "basic_gamepad.dpy"_hash, DeviceInputType::HAT);
-                    }
+                    generateDefaultMappings(slot);
                 }
-                devicesData[slot].device.setInputInfos(std::move(inputInfos));
             }
             if(devicesData[slot].device.getName().empty())
                 devicesData[slot].device.setName(SDL_JoystickName(js));

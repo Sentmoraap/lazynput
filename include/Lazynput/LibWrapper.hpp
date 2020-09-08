@@ -61,6 +61,14 @@ namespace Lazynput
             /// Database, to get devices data.
             const LazynputDb &lazynputDb;
 
+            /// \brief Generate default mappings.
+            ///
+            /// Generate default mappings, not using any databases. Those mappings will probably be wrong but it allows
+            /// to read inputs from an unsupported device the same way as a supported and a fallback devie.
+            ///
+            /// \param device: the device slot
+            void generateDefaultMappings(uint8_t device);
+
         public:
             /// \brief Constructor. The wrappers need to use a database.
             /// This constructor also adds some OS config tags using preprocessor macros.
