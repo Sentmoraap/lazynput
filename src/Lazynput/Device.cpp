@@ -75,6 +75,12 @@ namespace Lazynput
         return getInputInfos(StrHash::make(name));
     }
 
+    std::pair<StrHashMap<InputInfos>::const_iterator, StrHashMap<InputInfos>::const_iterator>
+            Device::getInputInfosIterators() const
+    {
+        return std::make_pair(inputInfos.cbegin(), inputInfos.cend());
+    }
+
     LabelInfos Device::getEnglishAsciiLabelInfos(StrHash hash) const
     {
         const InputInfos inputInfos = getInputInfos(hash);

@@ -111,6 +111,11 @@ namespace Lazynput
             /// \overload getInputInfos
             const InputInfos getInputInfos(const char *name) const;
 
+            /// \brief Get the begin and end constant iterators over the device's InputInfos.
+            /// \return The iterators.
+            std::pair<StrHashMap<InputInfos>::const_iterator, StrHashMap<InputInfos>::const_iterator>
+                    getInputInfosIterators() const;
+
             /// \brief Get an english ASCII displayable label based on the label infos.
             ///
             /// A simple way to get an english string to display the input label. If it's a dollar name supposed to
