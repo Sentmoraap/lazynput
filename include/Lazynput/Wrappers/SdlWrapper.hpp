@@ -36,6 +36,11 @@ namespace Lazynput
             std::pair<float, float> getHatValues(uint8_t device, uint8_t hat) const override;
             uint8_t getNumRel(uint8_t device) const override;
             float getRelDelta(uint8_t device, uint8_t rel) const override;
+
+            /// \brief Get the SDL_Joystick* of a device.
+            /// \param device : the device's slot index.
+            /// \return the SDL_Joystick*
+            SDL_Joystick *getJoystickFromSlot(uint8_t device) const;
     };
 }
 

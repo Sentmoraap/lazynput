@@ -227,6 +227,11 @@ namespace Lazynput
             memset(relAxes[slot], 0, sizeof(float) * MAX_REL_AXES);
         }
     }
+
+    SDL_Joystick *SdlWrapper::getJoystickFromSlot(uint8_t device) const
+    {
+        return joysticks[device];
+    }
 }
 
 #endif // LAZYNPUT_USE_SDL_WRAPPER
