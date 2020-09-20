@@ -61,7 +61,8 @@ namespace Lazynput
                 {
                     sf::Joystick::Identification joystickId = sf::Joystick::getIdentification(i);
                     devicesData[i].device = std::move(lazynputDb.getDevice(Lazynput::HidIds{
-                            static_cast<uint16_t>(joystickId.vendorId), static_cast<uint16_t>(joystickId.productId)}));
+                            static_cast<uint16_t>(joystickId.vendorId), static_cast<uint16_t>(joystickId.productId)},
+                            configTags.data(), configTags.size()));
                     if(devicesData[i].device) devicesData[i].status = DeviceStatus::SUPPORTED;
                     else generateDefaultMappings(i);
                     if(devicesData[i].device.getName().empty())

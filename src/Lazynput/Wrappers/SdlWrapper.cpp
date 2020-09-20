@@ -111,7 +111,9 @@ namespace Lazynput
             char driverStr[20];
             snprintf(driverStr, 20, "driver_version=%04x", driverVersion);
             StrHash driverHash = StrHash::make(driverStr);
-            devicesData[slot].device = std::move(lazynputDb.getDevice(hidIds, &driverHash, 1));
+            configTags.push_back(driverHash);
+            devicesData[slot].device = std::move(lazynputDb.getDevice(hidIds, configTags.data(), configTags.size()));
+            configTags.pop_back();
             if(devicesData[slot].device) devicesData[slot].status = DeviceStatus::SUPPORTED;
             else
             {

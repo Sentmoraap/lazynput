@@ -907,6 +907,27 @@ devices
             ls=b8 rs=b9
     }
 
+    0e6f.0185
+    {
+        name = "GameCube controller"
+        interfaces = basic_gamepad extended_gamepad
+        labels = nintendo_gamecube +
+        {
+            l1      "L"        5600AE
+            r1      "R"        5600AE
+            l2      "ZL"
+            r2      "ZR"
+            select  "-"
+            start   "+"
+            home    "$HOME Home"
+            capture "$CIRCLE_IN_SQUARE Capture"
+        }
+        default:
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a3
+            a=b1 b=b2 x=b0 y=b0 l1=b4 r1=b5 l2=b6 r2=b7
+            select=b8 start=b9 ls=b10 rs=b11 home=b12 capture=b13
+    }
+
     0e6f.0188
     {
         name = "Afterglow Deluxe+ Audio Wired Controller"
