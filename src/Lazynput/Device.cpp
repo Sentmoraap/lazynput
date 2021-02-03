@@ -37,6 +37,7 @@ namespace Lazynput
     {
         if(deviceData.parent != HidIds::invalid)
                 fillData(devicesDb.devices.at(deviceData.parent), devicesDb, configTags);
+        if(!deviceData.name.empty()) name = deviceData.name;
         for(StrHash preset : deviceData.presetsLabels) fillLabels(devicesDb.labels.at(preset), devicesDb.labels);
         fillLabels(deviceData.ownLabels);
         fillBindings(deviceData.bindings, configTags);
@@ -50,7 +51,6 @@ namespace Lazynput
 
     Device::Device(const DeviceData &deviceData, const DevicesDb &devicesDb, const std::vector<StrHash> &configTags)
     {
-        name = deviceData.name;
         fillData(deviceData, devicesDb, configTags);
         removeNilBindings();
     }

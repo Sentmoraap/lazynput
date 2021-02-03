@@ -195,6 +195,17 @@ labels
         capture "Touchpad"
     }
 
+    ps5 : ps4
+    {
+        # Colors are kept, some controllers may feature them
+        basic_gamepad:
+        select  "$PS5_CREATE Create"
+        start   "$HAMBURGER Options"    # Actually it looks more like a croque monsieur.
+
+        extra:
+        btn0    "$MIC_MUTE"
+    }
+
     xbox_base
     {
         basic_gamepad:
@@ -235,7 +246,7 @@ labels
     {
         basic_gamepad:
         select   "$XBOX_VIEW View"
-        start    "$HAMBURGER Menu"   # Actually it looks more like a croque monsieur.
+        start    "$HAMBURGER Menu"      # Or a club sandwich.
     }
 }
 
@@ -275,34 +286,7 @@ devices
     # End of base controllers
 
     # Vendor ID 0079 : DragonRise
-    0079.0006
-    {
-        # It looks that those IDs are used by a lot of cheap USB controllers, with different names and designs.
-        # They usually have 1 2 3 4 buttons with Playstation colours.
-        interfaces = basic_gamepad
-        labels =
-        {
-            a       nil     7EABE2
-            b       nil     E23838
-            x       nil     D08ED2
-            y       nil     49DA7C
-            # Triggers are labeled "1" and "2". To differentiate them, they are here named L1 R1 L2 R2 like on
-            # Playstation controllers.
-            l1      "L1"
-            r1      "R1"
-            l2      "L2"
-            r2      "R2"
-            select  "Select"
-            start   "Start"
-            # Because the labels are based on the Playstation controllers, shoudl ls and rs be named "L3" and "R3"?
-        }
-        default:
-            # The gamepad has an analog button. When it's turned of, the joystick are mapped to digital inputs.
-            # This mapping assumes that analog is turned on.
-            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a3
-            a=b2 b=b1 x=b3 y=b0 l1=b4 r1=b5 l2=b6 r2=b7
-            ls=b10 rs=b11 select=b8 start=b9
-    }
+    # 0079.0006 : shared by different controllers with differnet designs
 
     # 0079.181c : several controllers, including gamepad and arcade sticks.
 
@@ -531,7 +515,9 @@ devices
 
     045e.02ea : 045e.02e0
     {
-        default: ls=b6 rs=b7 select=b9 start=b8 home=b10
+        name = "Xbox One S Controller"
+        default: ls=b9 rs=b10 home=b8
+        #windows: l2/r2 is z
     }
 
     045e.02fd
@@ -546,6 +532,12 @@ devices
     }
 
     045e.0719 : 045e.0291 {}
+
+    045e.0b12 : 045e.02ea
+    {
+        name = "Xbox Series X|S Controller"
+        # The controller does not expose the share button
+    }
 
     # Vendor ID 046d : Logitech
     046d.0242 : 045e.028e
@@ -720,6 +712,19 @@ devices
     054c.09cc : 054c.05c4 {}
 
     054c.0ba0 : 054c.05c4 {}
+
+    054c.0ce6
+    {
+        name = "Sony DualSense"
+        interfaces = basic_gamepad extended_gamepad extra
+        # Unavailable features: haptics, touchpad (other than click), led, motion controls
+        labels = ps5
+        default:
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a5
+            a=b1 b=b2 x=b0 y=b3 l1=b4 r1=b5 l2=a3 r2=a4
+            ls=b10 rs=b11 select=b8 start=b9 home=b12 capture=b13
+            btn0=b14 # Mic mute
+    }
 
     # Vendor ID 056e : Elecom
     056e.200a
@@ -1007,11 +1012,38 @@ devices
     # 0738.8520 : Mad Catz FightPad PRO (PS4). See 0738.3250
 
 
-    0810.0001 : 0079.0006 {}
+    0810.0001
+    {
+        # It looks that those IDs are used by a lot of cheap USB controllers, with different names and designs.
+        # They usually have 1 2 3 4 buttons with Playstation colours.
+        interfaces = basic_gamepad
+        labels =
+        {
+            a       nil     7EABE2
+            b       nil     E23838
+            x       nil     D08ED2
+            y       nil     49DA7C
+            # Triggers are labeled "1" and "2". To differentiate them, they are here named L1 R1 L2 R2 like on
+            # Playstation controllers.
+            l1      "L1"
+            r1      "R1"
+            l2      "L2"
+            r2      "R2"
+            select  "Select"
+            start   "Start"
+            # Because the labels are based on the Playstation controllers, shoudl ls and rs be named "L3" and "R3"?
+        }
+        default:
+            # The gamepad has an analog button. When it's turned of, the joystick are mapped to digital inputs.
+            # This mapping assumes that analog is turned on.
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a3
+            a=b2 b=b1 x=b3 y=b0 l1=b4 r1=b5 l2=b6 r2=b7
+            ls=b10 rs=b11 select=b8 start=b9
+    }
 
-    0810.0003 : 0079.0006 {}
+    0810.0003 : 0810.0001 {}
 
-    0e8f.0003 : 0079.0006 {}
+    0e8f.0003 : 0810.0001 {}
 
     # Vendor ID 0f0d : Hori
     0f0d.0092
@@ -1115,7 +1147,7 @@ devices
             ls=b10 rs=b11 select=b8 home=b12 capture=b13
     }
 
-    2563.0523 : 0079.0006 {}
+    2563.0523 : 0810.0001 {}
 
     2563.0526
     {
