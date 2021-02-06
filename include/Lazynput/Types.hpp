@@ -18,12 +18,12 @@ namespace Lazynput
         /// \param vid : device product id.
         uint16_t pid;
 
-        constexpr bool operator ==(const HidIds &oth)
+        constexpr bool operator ==(const HidIds &oth) const
         {
             return vid == oth.vid && pid == oth.pid;
         }
 
-        constexpr bool operator !=(const HidIds &oth)
+        constexpr bool operator !=(const HidIds &oth) const
         {
             return !(*this == oth);
         }
@@ -37,7 +37,7 @@ namespace Lazynput
     class HidIdsIdentity
     {
         public:
-            constexpr uint32_t operator()(HidIds ids)
+            constexpr uint32_t operator()(HidIds ids) const
             {
                 return ids.vid << 16 | ids.pid;
             }

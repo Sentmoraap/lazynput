@@ -66,7 +66,7 @@ namespace Lazynput
             }
 
             /// \brief Implicit conversion operator to uint32_t to be able to use StrHashes conviniently in switches.
-            constexpr operator uint32_t() {return hash;}
+            constexpr operator uint32_t() const {return hash;}
     };
 
     /// \class StrHashIdentity
@@ -74,7 +74,7 @@ namespace Lazynput
     class StrHashIdentity
     {
         public:
-            constexpr StrHash operator()(StrHash hash)
+            constexpr StrHash operator()(StrHash hash) const
             {
                 return hash;
             }

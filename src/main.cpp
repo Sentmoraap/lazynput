@@ -7,6 +7,7 @@
 #ifdef LAZYNPUT_USE_SDL_WRAPPER
 #include <SDL2/SDL.h>
 #include "Lazynput/Wrappers/SdlWrapper.hpp"
+#undef main
 #else
 #include "Lazynput/Wrappers/SfmlWrapper.hpp"
 #endif

@@ -1,4 +1,5 @@
 #include "Lazynput/ErrorsWriter.hpp"
+#include <string>
 
 namespace Lazynput
 {

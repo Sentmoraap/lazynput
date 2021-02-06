@@ -1,6 +1,7 @@
 #include "Lazynput/Device.hpp"
 #include "Lazynput/PrivateTypes.hpp"
 #include <algorithm>
+#include <string>
 
 namespace Lazynput
 {

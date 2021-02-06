@@ -524,11 +524,29 @@ devices
     {
         name = "Xbox One Wireless Controller"
         interfaces = basic_gamepad extended_gamepad
+        labels = xbox_one
         default:
             dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a3
             a=b0 b=b1 x=b3 y=b4
             l1=b6 l2=a5 r1=b7 r2=a4
             ls=b13 rs=b14 select=b15 start=b11 home=b16
+    }
+
+    045e.02ff
+    {
+        # For some reason 045e.02ea and 0452.0b12 are 045e.02ff on Windows
+        name = "Xbox One Controller"
+        interfaces = basic_gamepad extended_gamepad
+        labels = xbox_one
+        default:
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a3 rsy=a4
+            a=b0 b=b1 x=b2 y=b3
+            l1=b4 l2=a2+ r1=b5 r2=a2-
+            ls=b8 rs=b9 select=b6 start=b7
+        xinput:
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a3 rsy=a4
+            a=b0 b=b1 x=b2 y=b3
+            l1=b4 r1=b5 l2=a2 r2=a5
     }
 
     045e.0719 : 045e.0291 {}

@@ -11,6 +11,9 @@ namespace Lazynput
     SdlWrapper::SdlWrapper(const LazynputDb &lazynputDb) : LibWrapper(lazynputDb)
     {
         configTags.push_back("sdl"_hash);
+        #ifdef _WIN32 // Can be 64-bits
+        configTags.push_back("xinput"_hash);
+        #endif
         devicesData.resize(MAX_JOYSTICKS);
     }
 

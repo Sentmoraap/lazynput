@@ -8,6 +8,10 @@ cmake_minimum_required(VERSION 2.6)
 
 PROJECT(Lazynput)
 
+SET(VCPKG_PATH "D:/Projets/vcpkg")
+SET(CMAKE_INCLUDE_PATH ${VCPKG_PATH}"/installed/x86-windows/include")
+SET(CMAKE_LIBRARY_PATH ${VCPKG_PATH}"/installed/x86-windows/lib")
+
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -pedantic -DLAZYNPUT_USE_SFML_WRAPPER")
 
 FILE(
