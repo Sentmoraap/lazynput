@@ -17,7 +17,7 @@ using namespace Lazynput::Litterals;
 // Lazynput is not an input manager so this program needs a way to know when a button is just pressed.
 struct NewpressAction
 {
-    bool canPress;
+    bool canPress = false;
     bool newPressed;
     void update(bool pressed)
     {
@@ -143,7 +143,7 @@ int main(int argc, char **argv)
     float shootTimer = 0;
     int8_t dashDirec = 0;
     int8_t moveDirec = 1;
-    NewpressAction pauseAction, dashLeft, dashRight, shootAction;
+    NewpressAction pauseAction, dashLeft, dashRight, shootAction, quitAction;
     bool paused = false;
     Bullet bullets[NB_BULLETS];
 
@@ -180,7 +180,8 @@ int main(int argc, char **argv)
         {
             return libWrapper.getInputValue(0, inputMappings[gi].hash) > 0;
         };
-        if(getGameInput(GameInput::QUIT)) window.close();
+        quitAction.update(getGameInput(GameInput::QUIT));
+        if(quitAction.newPressed) window.close();
 
         // Update
         float time = clock.getElapsedTime().asSeconds() * FRAME_RATE;

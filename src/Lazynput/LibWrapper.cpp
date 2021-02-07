@@ -1,4 +1,5 @@
 #include "Lazynput/LibWrapper.hpp"
+#include "Lazynput/LazynputDb.hpp"
 #include <algorithm>
 
 namespace Lazynput
@@ -53,10 +54,10 @@ namespace Lazynput
                 {
                     case Lazynput::DeviceInputType::NIL:
                         // Should not happen
-                        singleValue = 0;
+                        singleValue = 0.f;
                         break;
                     case Lazynput::DeviceInputType::BUTTON:
-                        singleValue = getBtnPressed(device, singleBinding.index) ? 1.f : 0.f;
+                        singleValue = getBtnPressed(device, singleBinding.index) ? 1.f : -1.f;
                         break;
                     case Lazynput::DeviceInputType::HAT:
                     {
@@ -74,13 +75,14 @@ namespace Lazynput
                 if(singleBinding.options.invert) singleValue = -singleValue;
                 if(singleBinding.options.half)
                 {
-                    singleValue = 2 * singleValue - 1;
-                    if(singleValue < 0) singleValue = 0;
+                    singleValue = 2.f * singleValue - 1.f;
+                    if(singleValue < -1.f) singleValue = 1.f;
                 }
                 andValue = std::min(andValue, singleValue);
             }
             value = std::max(value, andValue);
         }
+        if(lazynputDb.getInterfaceInputType(hash) == InterfaceInputType::BUTTON) value = (value + 1.f) * .5f;
         return value;
     }
 
