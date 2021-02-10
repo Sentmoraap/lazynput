@@ -61,9 +61,12 @@ interfaces
     extended_gamepad
     {
         btn:
-        c z
-        l3 l4 r3 r4
-        home capture
+        alpha beta                          # Extra face buttons on the left side
+        c z                                 # Extra face buttons on the right side
+        l3 l4 r3 r4                         # Shoulder buttons on extra rows
+        li1 li2 li3 li4 ri1 ri2 ri3 ri4     # Inner shoulder buttons when they are two pairs per row
+        lp1 lp2 lp3 lp4 rp1 rp2 rp3 rp4     # Paddles or buttons on the back
+        home capture c5 c6                  # Extra buttons at the center
     }
 
     # This interface can be used for devices that provides motion controls.
@@ -156,8 +159,8 @@ labels
         rsy     "C"         FFE400
 
         extended_gamepad:
-        l3      "DL"
-        r3      "DR"
+        li2     "DL"
+        ri2     "DR"
     }
 
     ps1
@@ -298,7 +301,7 @@ devices
         labels = nintendo_gamecube
         default:
             dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a5
-            a=b1 b=b2 x=b3 y=b0 r1=b7 l2=a3 r2=a4 l3=b4 r3=b5
+            a=b1 b=b2 x=b3 y=b0 r1=b7 l2=a3 r2=a4 li2=b4 ri2=b5
             start=b9
     }
 
@@ -344,7 +347,7 @@ devices
 
         default:
             dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a3
-            a=b0 b=b2 x=b1 y=b3 l1=b4 r1=b6 l2=b5 r2=b7 l3=b9 r3=b10
+            a=b0 b=b2 x=b1 y=b3 l1=b4 r1=b6 l2=b5 r2=b7 lp1=b9 rp1=b10
             ls=b11 rs=b12 home=b8
     }
 
@@ -353,7 +356,7 @@ devices
         name = "Thrustmaster FireStorm Dual Analog 2"
         interfaces = basic_gamepad extended_gamepad
         default:
-            l3=b8 r3=b9 ls=b10 rs=b11 home=nil
+            lp1=b8 rp1=b9 ls=b10 rs=b11 home=nil
     }
 
     044f.b304 : 044f.b303
@@ -386,7 +389,7 @@ devices
             l1 "L1", l2 "L2", r1 "R1", r2 "R2"
         }
         default:
-            select=b8 start=b9 # l3=nil r3=nil
+            select=b8 start=b9 lp1=nil rp1=nil
     }
 
     044f.b320
@@ -425,12 +428,12 @@ devices
         interfaces = basic_gamepad extended_gamepad extra
         labels =
         {
-            l2 nil, r2 nil, l3 "L2", r3 "R2"
+            l2 nil, r2 nil, lp1 "L2", rp1 "R2"
         }
 
         # This mapping assumes the controller is in 6 axis mode.
         default:
-            l2=~a3 r2=~a4 l3=b6 r3=b7
+            l2=~a3 r2=~a4 l3=nil r3=nil lp1=b6 rp1=b7
             abs0=a6 # Steering wheel
     }
 
@@ -748,12 +751,12 @@ devices
     056e.200a
     {
         name = "Elecom JC-DUX60"
-        interfaces = basic_gamepad extended_gamepad extra
+        interfaces = basic_gamepad extended_gamepad
         default:
             dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a3
-            a=b2 b=b3 c=b23 x=b0 y=b1 z=b21 l1=b4 r1=b7 l2=b8 r2=b11 l3=b12 r3=b13 l4=b5 r4=b6
+            a=b2 b=b3 c=b23 x=b0 y=b1 z=b21 alpha=b16 beta=b18
+            l1=b4 r1=b7 l2=b8 r2=b11 l3=b12 r3=b13 li1=b5 ri1=b6 li2=b9 ri2=b10
             ls=b14 rs=b15 select=b17 start=b20 capture=b19 home=b22
-            btn0=b9 btn1=b10 btn2=b16 btn3=b18
     }
 
     # Vendor ID 057e : Nintendo
