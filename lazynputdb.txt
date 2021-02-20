@@ -737,14 +737,14 @@ devices
     054c.0ce6
     {
         name = "Sony DualSense"
-        interfaces = basic_gamepad extended_gamepad extra
+        interfaces = basic_gamepad extended_gamepad
         # Unavailable features: haptics, touchpad (other than click), led, motion controls
         labels = ps5
         default:
             dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a5
             a=b1 b=b2 x=b0 y=b3 l1=b4 r1=b5 l2=a3 r2=a4
             ls=b10 rs=b11 select=b8 start=b9 home=b12 capture=b13
-            btn0=b14 # Mic mute
+            c5=b14 # Mic mute
     }
 
     # Vendor ID 056e : Elecom

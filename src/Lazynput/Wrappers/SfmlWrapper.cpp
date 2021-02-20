@@ -22,6 +22,11 @@ namespace Lazynput
 
     float SfmlWrapper::getAbsValue(uint8_t device, uint8_t axis) const
     {
+        #ifdef __linux__ // SFML maps RX RY and RZ in an unexpected order
+            if(axis == 3) axis = 4;
+            else if(axis == 4) axis = 5;
+            else if(axis == 5) axis = 3;
+        #endif
         return axis < sf::Joystick::PovX
                 ? sf::Joystick::getAxisPosition(device, static_cast<sf::Joystick::Axis>(axis)) * 0.01
                 : 0.f;
