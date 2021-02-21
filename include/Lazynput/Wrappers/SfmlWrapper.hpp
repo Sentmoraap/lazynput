@@ -10,6 +10,9 @@ namespace Lazynput
     /// \brief Wraps SFML joystick functions to mappings-aware functions.
     class SfmlWrapper final : public LibWrapper
     {
+        private:
+            uint8_t remapAxis(uint8_t device, uint8_t axis) const;
+
         public:
             SfmlWrapper(const LazynputDb &lazynputDb);
             void update() override;

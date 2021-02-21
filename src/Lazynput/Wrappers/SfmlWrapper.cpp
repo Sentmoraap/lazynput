@@ -20,15 +20,35 @@ namespace Lazynput
         return num;
     }
 
+    uint8_t SfmlWrapper::remapAxis(uint8_t device, uint8_t axis) const
+    {
+        // Remove holes
+        uint8_t axisCount = 0;
+        for(uint8_t i = 0; i < sf::Joystick::PovX; i++)
+        {
+            uint8_t reorderedAxis = i;
+            #ifdef __linux__
+                // SFML maps RX RY and RZ in an unexpected order
+                if(i == 3) reorderedAxis = 4;
+                else if(i == 4) reorderedAxis = 5;
+                else if(i == 5) reorderedAxis = 3;
+            #endif
+            if(sf::Joystick::hasAxis(device, static_cast<sf::Joystick::Axis>(reorderedAxis)))
+            {
+                axisCount++;
+                if(axisCount == axis + 1) return reorderedAxis;
+            }
+        }
+
+        // Axis not found
+        return 255;
+    }
+
     float SfmlWrapper::getAbsValue(uint8_t device, uint8_t axis) const
     {
-        #ifdef __linux__ // SFML maps RX RY and RZ in an unexpected order
-            if(axis == 3) axis = 4;
-            else if(axis == 4) axis = 5;
-            else if(axis == 5) axis = 3;
-        #endif
-        return axis < sf::Joystick::PovX
-                ? sf::Joystick::getAxisPosition(device, static_cast<sf::Joystick::Axis>(axis)) * 0.01
+        uint8_t sfmlAxis = remapAxis(device, axis);
+        return sfmlAxis < 255
+                ? sf::Joystick::getAxisPosition(device, static_cast<sf::Joystick::Axis>(sfmlAxis)) * 0.01
                 : 0.f;
     }
 
