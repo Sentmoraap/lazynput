@@ -35,8 +35,8 @@ namespace Lazynput
             #endif
             if(sf::Joystick::hasAxis(device, static_cast<sf::Joystick::Axis>(reorderedAxis)))
             {
+                if(axisCount == axis) return reorderedAxis;
                 axisCount++;
-                if(axisCount == axis + 1) return reorderedAxis;
             }
         }
 

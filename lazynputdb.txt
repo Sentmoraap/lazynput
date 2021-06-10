@@ -209,6 +209,36 @@ labels
         btn0    "$MIC_MUTE"
     }
 
+    megadrive
+    {
+        basic_gamepad:
+        a       "A"
+        b       "B"
+        x       "X"
+        y       "Y"
+        start   "Start"
+
+        extended_gamepad:
+        c       "C"
+        z       "Z"
+    }
+
+    saturn
+    {
+        basic_gamepad:
+        a       "A"     18AE76
+        b       "B"     EFA11F
+        x       "X"
+        y       "Y"
+        l1      "L"
+        r1      "R"
+        start   "Start"
+
+        extended_gamepad:
+        c       "C"     3F6BC5
+        z       "Z"
+    }
+
     xbox_base
     {
         basic_gamepad:
@@ -786,6 +816,23 @@ devices
         default: dpx=a0 dpy=a1 a=b1 b=b0 x=b3 y=b2 l1=b4 r1=b5 select=b6 start=b7
     }
 
+    # Vendor ID 05a0
+    # Only one 8BitDo product here, the rest uses vid 2dc8
+    05a0.3232
+    {
+        name = "8BitDo Zero"
+        interfaces = basic_gamepad
+        labels =
+        {
+            a "A", b "B", x "X", y "Y", l1 "L", r1 "R"
+            select "Select", start "Start"
+        }
+        default:
+            dpx=a0 dpy=a1
+            a=b0 b=b1 x=b3 y=b4 l1=b6 r1=b7
+            select=b10 start=b11
+    }
+
     # Vendor ID 06a3 : Saitek
     06a3.0107
     {
@@ -1183,4 +1230,256 @@ devices
     # TODO: 2563.0575
     # Can be a PS3 knockoff controller or a Neo-Geo mini pad. Those are too different to have the same mappings.
     # It needs a way to differentiate between controllers.
+
+    # Vendor ID 2dc8 : 8Bitdo
+    2dc8.0651
+    {
+        # Bluetooth
+        # D-Pad can be mapped to d-pad, left joystik or right joystick by hoding select + respectively up, left or right
+        # for 5 seconds.
+        name = "8BitDo M30"
+        interfaces = basic_gamepad extended_gamepad
+        labels =
+        {
+            a "A", b "B", c "C", x "X", y "Y", z "Z"
+            l1 "L", r1 "R"
+            select "-select", start "+start"
+            home "home" # Checkerboard heart pixel art
+        }
+        default:
+            dpx=h0x|a0|a2 dpy=h0y|a1|a3
+            a=b0 b=b1 c=b7 x=b3 y=b4 z=b6
+            l1=b8 r1=b9
+            select=b10 start=b11 home=b2
+    }
+
+    2dc8.2810
+    {
+        # Bluetooth
+        name = "8BitDo F30"
+        interfaces = basic_gamepad extended_gamepad
+        labels =
+        {
+            a "B", b "A", l1 "L", r1 "R"
+            select "-select", start "+start"
+            home "home"
+        }
+        default:
+            dpx=h0x dpy=h0y
+            a=b1 b=b0 l1=b6 r1=b7
+            select=b10 start=b11 home=b2
+    }
+
+    2dc8.2820 : 2dc8.2810
+    {
+        name = "8BitDo N30"
+    }
+
+    2dc8.2830
+    {
+        # Bluetooth
+        name = "8BitDo SF30"
+        interfaces = basic_gamepad
+        labels = nintendo_classic
+        default:
+            dpx=a0 dpy=a1
+            a=b1 b=b0 x=b4 y=b3 l1=b6 r1=b7
+            select=b10 start=b11
+    }
+
+    2dc8.2840 : 2dc8.2830
+    {
+        # Bluetooth
+        name = "8BitDo SN30"
+    }
+
+    2dc8.2862 : 2dc8.2830
+    {
+        # Bluetooth
+        name = "8BitDo SN30 GP"
+    }
+
+    2dc8.2865
+    {
+        # Bluetooth
+        name = "8BitDo N30 Pro 2"
+        interfaces = basic_gamepad extended_gamepad
+        labels =
+        {
+            a "B", b "A", x "Y", y "X"
+            l1 "L1", li1 "L2", r1 "R1", ri1 "R2"
+            select "-select", start "+start"
+            home "Home" # Heart pixel checkerboard
+        }
+        default:
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a3 rsy=a4
+            a=b1 b=b0 x=b4 y=b3 l1=b6 r1=b7 li1=b8 ri1=b9 ls=b13 rs=b14
+            select=b10 start=b11 home=b2
+        linux:
+            rsx=a2 rsy=a3
+        apple:
+            rsx=a2 rsy=a3 li1=a4 ri1=a5
+    }
+
+    2dc8.3000 : 2dc8.2830
+    {
+        name = "8BitDo SN30 2.4G"
+    }
+
+    2dc8.3001 : 2dc8.2830
+    {
+        name = "8BitDo SF30 2.4G"
+    }
+
+    2dc8.3230
+    {
+        # Bluetooth, D-Input mode (B+Start)
+        name = "8BitDo Zero 2"
+        interfaces = basic_gamepad
+        labels =
+        {
+            a "A", b "B", x "Y", y "X", l1 "L", r1 "R"
+            select "-select", start "+start"
+        }
+        default:
+            dpx=a0 dpy=a1
+            a=b1 b=b0 x=b4 y=b3 l1=b6 r1=b7
+            select=b10 start=b11
+    }
+
+    2dc8.3810
+    {
+        # Bluetooth
+        name = "8BitDo FC30 Pro"
+        interfaces = basic_gamepad extended_gamepad
+        labels =
+        {
+            a       "B"
+            b       "A"
+            x       "Y"
+            y       "X"
+            l1      "L1"
+            r1      "R1"
+            li1     "L2"
+            ri1     "R2"
+            select  "Select"
+            start   "Start"
+        }
+        default:
+            dpx=h0x dpy=h0y
+            a=b1 b=b0 x=b4 y=b3
+            l1=b6 r1=b7 li1=b8 ri1=b9 ls=b13 rs=b14
+            select=b10 start=b11
+    }
+
+    2dc8.3820 : 2dc8.3810
+    {
+        # Bluetooth
+        name = "8BitDo FC30 Pro"
+    }
+
+    2dc8.5006 : 2dc8.0651 {} # USB
+
+    2dc8.5001 : 2dc8.0651
+    {
+        name = "8BitDo M30 Mod Kit"
+        labels = megadrive
+        default:
+            l1=nil r1=nil home=nil
+    }
+
+    2dc8.5103 : 2dc8.2830
+    {
+        name = "8BitDo SN30 Modkit"
+    }
+
+    2dc8.5104 : 2dc8.2810
+    {
+        name = "8BitDo N30 Modkit"
+        labels =
+        {
+            select  "Select"
+            start   "Start"
+        }
+        default:
+            l1=nil r1=nil home=nil
+    }
+
+    2dc8.5007
+    {
+        # Start + cross
+        name = "8BitDo P30 Modkit"
+        interfaces = basic_gamepad
+        labels = ps1
+        default:
+            dpx=h0x dpy=h0y
+            a=b0 b=b1 x=b3 y=b4
+            l1=b6 r1=b7 l2=b8 r2=b9
+            select=b10 start=b11
+    }
+
+    2dc8.6000
+    {
+        # USB
+        name = "8BitDo SF30 Pro"
+        interfaces = basic_gamepad extended_gamepad
+        labels = nintendo_classic +
+        {
+            l2 "L2", r2 "R2"
+            ls "L3", rs "R3"
+            home "Home" # Has a pixel art icon
+            # Has a star button for turbo function
+        }
+        default:
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a3
+            a=b1 b=b0 x=b4 y=b3 l1=b6 r1=b7 l2=b8 r2=b9
+            select=b10 start=b11 home=b2 ls=b13 rs=b14
+    }
+
+    2dc8.6001 : 2dc8.6000
+    {
+        # USB
+        name = "8BitDo SN30 Pro"
+    }
+
+    2dc8.6002 : 2dc8.6000
+    {
+        # USB
+        name = "8BitDo SN30 Pro+"
+    }
+
+    2dc8.6100 : 2dc8.6000 {} # Bluetooth
+
+    2dc8.6101 : 2dc8.6001 {} # Bluetooth
+
+    2dc8.6102 : 2dc8.6002 {} # Bluetooth
+
+    2dc8.6728
+    {
+        name = "8BitDo Saturn Modkit"
+        interfaces = basic_gamepad extended_gamepad
+        labels = saturn
+        default:
+            dpx=h0x|a0|a2 dpy=h0y|a1|a3
+            a=b0 b=b1 c=b7 x=b3 y=b4 z=b6 l1=b8 r1=b9
+            start=b11
+    }
+
+    2dc8.9000 : 2dc8.3810 {} # USB
+
+    2dc8.9001 : 2dc8.3820 {} # USB
+
+    2dc8.9012 : 2dc8.2862 {} # USB
+
+    2dc8.9015 : 2dc8.2865 {} # USB
+
+    2dc8.9018 : 2dc8.3230 {}
+
+    2dc8.ab11 : 2dc8.2810 {} # USB
+
+    2dc8.ab12 : 2dc8.2820 {} # USB
+
+    2dc8.ab20 : 2dc8.2840 {} # USB
+
+    2dc8.ab21 : 2dc8.2830 {} # USB
 }

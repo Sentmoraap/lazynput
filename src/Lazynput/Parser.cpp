@@ -829,7 +829,10 @@ namespace Lazynput
                             {
                                 while(it != deviceInterfaces.end() && *it < *parentIt) it++;
                                 if(it == deviceInterfaces.end() || *it != *parentIt)
-                                        deviceInterfaces.insert(it, *parentIt);
+                                {
+                                    deviceInterfaces.insert(it, *parentIt);
+                                    it = deviceInterfaces.begin();
+                                }
                                 parentIt++;
                             }
                         }
