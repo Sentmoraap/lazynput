@@ -3,6 +3,7 @@
 #include <utility>
 #include <vector>
 #include <cstdint>
+#include <string>
 #include "Lazynput/StrHash.hpp"
 
 /// \file Types.hpp
