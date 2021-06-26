@@ -105,6 +105,15 @@ namespace Lazynput
             /// \return true if successfully parsed, false otherwise.
             bool parseFullBindingInput(FullBindingInfos &fullBinding);
 
+            /// \brief Parse a device definition.
+            ///
+            /// Parse the inside of a device de1inition.
+            ///
+            /// \param device : the device structure to fill.
+            /// \param deviceInterfaces : devices's interfces, may be not empty if the device has a parent.
+            /// \return true if successfully parsed, false otherwise.
+            bool parseDevice(DeviceData &device, std::vector<StrHash> deviceInterfaces);
+
             /// \brief Parses a devices block from input stream.
             ///
             /// Parse devices data from a text input stream. Existing data will be overrided.

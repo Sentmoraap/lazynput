@@ -678,172 +678,23 @@ namespace Lazynput
         }
     }
 
-    bool Parser::parseDevicesBlock()
+    bool Parser::parseDevice(DeviceData &device, std::vector<StrHash> deviceInterfaces)
     {
-        enum : uint8_t {START, INSIDE_BLOCK, AFTER_VID, EXPECT_PID, AFTER_PID, EXPECT_PARENT_VID, AFTER_PARENT_VID,
-                EXPECT_PARENT_PID, AFTER_INHERITANCE, INSIDE_DEVICE, EXPECT_NAME, EXPECT_INTERFACE, EXPECT_LABELS,
+        enum : uint8_t {INSIDE_DEVICE, EXPECT_NAME, EXPECT_INTERFACE, EXPECT_LABELS,
                 EXPECT_LABELS_BLOCK, TAG_OR_INPUT, END_TAG_OR_INPUT, EXPECT_INPUT, EXPECT_EQUALS, END_OF_LINE}
-                state = START, nextState;
-        StrHash hash, prevHash, inputHash;
+                state = INSIDE_DEVICE, nextState;
+
+        StrHash hash, prevHash;
         std::string token, prevToken;
+        bool nameDefined = false, interfacesDefined = false, labelsDefined = false;
         std::vector<ConfigTagBindings*> tagsStack;
         tagsStack.reserve(4);
-        std::vector<StrHash> deviceInterfaces;
-        DeviceData device;
-        HidIds ids, parentIds;
         Interface *interface;
-        bool nameDefined, interfacesDefined, labelsDefined;
+
         while(extractor.getNextToken(hash, &token))
         {
             switch(state)
             {
-                case START:
-                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "{"_hash, token, INSIDE_BLOCK))
-                        return false;
-                    break;
-                case INSIDE_BLOCK:
-                    switch(hash)
-                    {
-                        case "}"_hash:
-                            return true;
-                        case "\n"_hash:
-                            break;
-                        default:
-                        {
-                            char *end;
-                            uint32_t val = strtoul(token.c_str(), &end, 16);
-                            if(*end || val > 0xFFFF)
-                            {
-                                errorsWriter.error("invalid device id " + token);
-                                return false;
-                            }
-                            else
-                            {
-                                ids.vid = static_cast<uint16_t>(val);
-                                state = AFTER_VID;
-                            }
-                            break;
-                        }
-                    }
-                    break;
-                case AFTER_VID:
-                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "."_hash, token, EXPECT_PID))
-                        return false;
-                    break;
-                case EXPECT_PID:
-                {
-                    char *end;
-                    uint32_t val = strtoul(token.c_str(), &end, 16);
-                    if(*end || val > 0xFFFF)
-                    {
-                        errorsWriter.error("invalid product id " + token);
-                        return false;
-                    }
-                    else
-                    {
-                        ids.pid = static_cast<uint16_t>(val);
-                        if(newDevicesDb.devices.count(ids))
-                        {
-                            errorsWriter.error("multiple definition of the device " + token
-                                + " in the same stream");
-                            return false;
-                        }
-                        device = DeviceData();
-                        deviceInterfaces.clear();
-                        nameDefined = false;
-                        interfacesDefined = false;
-                        labelsDefined = false;
-                        state = AFTER_PID;
-                    }
-                    break;
-                }
-                case AFTER_PID:
-                    switch(hash)
-                    {
-                        case "\n"_hash:
-                            break;
-                        case ":"_hash:
-                            state = EXPECT_PARENT_VID;
-                            break;
-                        case "{"_hash:
-                            state = INSIDE_DEVICE;
-                            device.parent = HidIds::invalid;
-                            break;
-                        default:
-                            errorsWriter.unexpectedTokenError(token);
-                            return false;
-                    }
-                    break;
-                case EXPECT_PARENT_VID:
-                {
-                    char *end;
-                    uint32_t val = strtoul(token.c_str(), &end, 16);
-                    if(*end || val > 0xFFFF)
-                    {
-                        errorsWriter.error("invalid parent vendor id " + token);
-                        return false;
-                    }
-                    else
-                    {
-                        parentIds.vid = static_cast<uint16_t>(val);
-                        state = AFTER_PARENT_VID;
-                    }
-                    break;
-                }
-                case AFTER_PARENT_VID:
-                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "."_hash, token, EXPECT_PARENT_PID))
-                        return false;
-                    break;
-                case EXPECT_PARENT_PID:
-                {
-                    char *end;
-                    uint32_t val = strtoul(token.c_str(), &end, 16);
-                    if(*end || val > 0xFFFF)
-                    {
-                        errorsWriter.error("invalid parent vendor id " + token);
-                        return false;
-                    }
-                    else
-                    {
-                        parentIds.pid = static_cast<uint16_t>(val);
-                        if(!newDevicesDb.devices.count(parentIds) && !oldDevicesDb.devices.count(parentIds))
-                        {
-                            std::ostringstream oss;
-                            oss << "unknown parent " << std::setfill('0') << std::setw(4) << std::hex << parentIds.vid
-                                    << '.' << std::setfill('0') << std::setw(4) << std::hex << parentIds.pid;
-                            errorsWriter.error(oss.str());
-                            return false;
-                        }
-                        device.parent = parentIds;
-                        HidIds parentIds = device.parent;
-                        // Construct list of all implemented interfaces, own ones and inherited ones.
-                        while(parentIds != HidIds::invalid)
-                        {
-                            DeviceData &parent =
-                                    (newDevicesDb.devices.count(parentIds) ? newDevicesDb : oldDevicesDb)
-                                    .devices[parentIds];
-                            parentIds = parent.parent;
-                            std::vector<StrHash>::iterator it = deviceInterfaces.begin(),
-                                    parentIt = parent.interfaces.begin();
-                            while(parentIt != parent.interfaces.end())
-                            {
-                                while(it != deviceInterfaces.end() && *it < *parentIt) it++;
-                                if(it == deviceInterfaces.end() || *it != *parentIt)
-                                {
-                                    deviceInterfaces.insert(it, *parentIt);
-                                    it = deviceInterfaces.begin();
-                                }
-                                parentIt++;
-                            }
-                        }
-                        state = AFTER_INHERITANCE;
-                    }
-                    break;
-                }
-                case AFTER_INHERITANCE:
-                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "{"_hash, token, INSIDE_DEVICE))
-                        return false;
-                    break;
                 case INSIDE_DEVICE:
                     switch(hash)
                     {
@@ -889,9 +740,7 @@ namespace Lazynput
                                 return false;
                             break;
                         case "}"_hash:
-                            newDevicesDb.devices[ids] = std::move(device);
-                            state = INSIDE_BLOCK;
-                            break;
+                            return true;
                     }
                     break;
                 case EXPECT_NAME:
@@ -1026,9 +875,7 @@ namespace Lazynput
                         case "\n"_hash:
                             break;
                         case "}"_hash:
-                            newDevicesDb.devices[ids] = std::move(device);
-                            state = INSIDE_BLOCK;
-                            break;
+                            return true;
                         default:
                             if(!Utils::isNameCharacter(token[0]))
                             {
@@ -1113,6 +960,179 @@ namespace Lazynput
                 case END_OF_LINE:
                     if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "\n"_hash, token, nextState))
                         return false;
+                    break;
+            }
+        }
+        return false;
+    }
+
+    bool Parser::parseDevicesBlock()
+    {
+        enum : uint8_t {START, INSIDE_BLOCK, AFTER_VID, EXPECT_PID, AFTER_PID, EXPECT_PARENT_VID, AFTER_PARENT_VID,
+                EXPECT_PARENT_PID, AFTER_INHERITANCE}
+                state = START;
+        StrHash hash, inputHash;
+        std::string token;
+        DeviceData device;
+        std::vector<StrHash> deviceInterfaces;
+        HidIds ids, parentIds;
+        while(extractor.getNextToken(hash, &token))
+        {
+            switch(state)
+            {
+                case START:
+                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "{"_hash, token, INSIDE_BLOCK))
+                        return false;
+                    break;
+                case INSIDE_BLOCK:
+                    switch(hash)
+                    {
+                        case "}"_hash:
+                            return true;
+                        case "\n"_hash:
+                            break;
+                        default:
+                        {
+                            char *end;
+                            uint32_t val = strtoul(token.c_str(), &end, 16);
+                            if(*end || val > 0xFFFF)
+                            {
+                                errorsWriter.error("invalid device id " + token);
+                                return false;
+                            }
+                            else
+                            {
+                                ids.vid = static_cast<uint16_t>(val);
+                                state = AFTER_VID;
+                            }
+                            break;
+                        }
+                    }
+                    break;
+                case AFTER_VID:
+                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "."_hash, token, EXPECT_PID))
+                        return false;
+                    break;
+                case EXPECT_PID:
+                {
+                    char *end;
+                    uint32_t val = strtoul(token.c_str(), &end, 16);
+                    if(*end || val > 0xFFFF)
+                    {
+                        errorsWriter.error("invalid product id " + token);
+                        return false;
+                    }
+                    else
+                    {
+                        ids.pid = static_cast<uint16_t>(val);
+                        if(newDevicesDb.devices.count(ids))
+                        {
+                            errorsWriter.error("multiple definition of the device " + token
+                                + " in the same stream");
+                            return false;
+                        }
+                        device = DeviceData();
+                        state = AFTER_PID;
+                    }
+                    break;
+                }
+                case AFTER_PID:
+                    switch(hash)
+                    {
+                        case "\n"_hash:
+                            break;
+                        case ":"_hash:
+                            state = EXPECT_PARENT_VID;
+                            break;
+                        case "{"_hash:
+                            device.parent = HidIds::invalid;
+                            if(parseDevice(device, deviceInterfaces))
+                            {
+                                newDevicesDb.devices[ids] = std::move(device);
+                                state = INSIDE_BLOCK;
+                            }
+                            else return false;
+                            break;
+                        default:
+                            errorsWriter.unexpectedTokenError(token);
+                            return false;
+                    }
+                    break;
+                case EXPECT_PARENT_VID:
+                {
+                    char *end;
+                    uint32_t val = strtoul(token.c_str(), &end, 16);
+                    if(*end || val > 0xFFFF)
+                    {
+                        errorsWriter.error("invalid parent vendor id " + token);
+                        return false;
+                    }
+                    else
+                    {
+                        parentIds.vid = static_cast<uint16_t>(val);
+                        state = AFTER_PARENT_VID;
+                    }
+                    break;
+                }
+                case AFTER_PARENT_VID:
+                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "."_hash, token, EXPECT_PARENT_PID))
+                        return false;
+                    break;
+                case EXPECT_PARENT_PID:
+                {
+                    char *end;
+                    uint32_t val = strtoul(token.c_str(), &end, 16);
+                    if(*end || val > 0xFFFF)
+                    {
+                        errorsWriter.error("invalid parent vendor id " + token);
+                        return false;
+                    }
+                    else
+                    {
+                        parentIds.pid = static_cast<uint16_t>(val);
+                        if(!newDevicesDb.devices.count(parentIds) && !oldDevicesDb.devices.count(parentIds))
+                        {
+                            std::ostringstream oss;
+                            oss << "unknown parent " << std::setfill('0') << std::setw(4) << std::hex << parentIds.vid
+                                    << '.' << std::setfill('0') << std::setw(4) << std::hex << parentIds.pid;
+                            errorsWriter.error(oss.str());
+                            return false;
+                        }
+                        device.parent = parentIds;
+                        HidIds parentIds = device.parent;
+                        // Construct list of all implemented interfaces, own ones and inherited ones.
+                        while(parentIds != HidIds::invalid)
+                        {
+                            DeviceData &parent =
+                                    (newDevicesDb.devices.count(parentIds) ? newDevicesDb : oldDevicesDb)
+                                    .devices[parentIds];
+                            parentIds = parent.parent;
+                            std::vector<StrHash>::iterator it = deviceInterfaces.begin(),
+                                    parentIt = parent.interfaces.begin();
+                            while(parentIt != parent.interfaces.end())
+                            {
+                                while(it != deviceInterfaces.end() && *it < *parentIt) it++;
+                                if(it == deviceInterfaces.end() || *it != *parentIt)
+                                {
+                                    deviceInterfaces.insert(it, *parentIt);
+                                    it = deviceInterfaces.begin();
+                                }
+                                parentIt++;
+                            }
+                        }
+                        state = AFTER_INHERITANCE;
+                    }
+                    break;
+                }
+                case AFTER_INHERITANCE:
+                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "{"_hash, token, INSIDE_BLOCK))
+                        return false;
+                    if(parseDevice(device, deviceInterfaces))
+                    {
+                        newDevicesDb.devices[ids] = std::move(device);
+                        state = INSIDE_BLOCK;
+                    }
+                    else return false;
                     break;
             }
         }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <string>
 
 /// \file StrHash.hpp
 /// \brief Definition for StrHash use.
