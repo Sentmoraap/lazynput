@@ -22,13 +22,39 @@ namespace Lazynput
             /// Labels and bindings.
             StrHashMap<InputInfos> inputInfos;
 
+            /// Dummy InputInfos whose reference is returned when an input is not present.
+            static InputInfos dummyInputInfos;
+
+            /// \brief Generate labels data from the device's label data and it's bindings.
+            ///
+            /// Copies the color from the database and generates it's string from the database string.
+            /// When there is a dollar name and the icons database has an unicode string for it, the LabelInfo's
+            /// Unicode string will be that one. Otherwise it will be the same as the ASCII string.
+            /// The ASCII sctring replace the dollar name by an english string. If the input doesn't have a label, it
+            /// returns 'A', 'B', 'H' or 'R' folowed by the input number starting at 1 and eventual modifiers.
+            ///
+            /// \param dbLabel : the database's label data.
+            /// \params iconsDb : the icons database.
+            /// \return the generated device's label data.
+            LabelInfos genLabel(const DbLabelInfos &dbLabel, const IconsDb &iconsDb);
+
+            /// \brief Generate labels data from it's binding
+            ///
+            /// Called when an input doesn't have a label. It generates a generic name 'A', 'B', 'H' or 'R' folowed by
+            /// the input number starting at 1 and eventual modifiers.
+            /// If it's a complex binding, it uses only the first input.
+            ///
+            /// \param inputinfos : the InputInfos structules whose label will be filled from it's bindings.
+            void genGenericLabel(InputInfos &inputInfos);
+
             /// \brief Fills labels data.
             ///
             /// Fills labels data from labels data provided by the labels database or a single device's data.
             /// Existing data is overwritten.
             ///
             /// \param labels : labels data.
-            void fillLabels(const StrHashMap<LabelInfos> &labels);
+            /// \param iconsDb : icons database.
+            void fillLabels(const StrHashMap<DbLabelInfos> &labels, const IconsDb &iconsDb);
 
             /// \brief Fills labels data from the labels database.
             ///
@@ -37,7 +63,8 @@ namespace Lazynput
             ///
             /// \param labels : a labels preset.
             /// \param labelsDb : labels database.
-            void fillLabels(const Labels &labels, const LabelsDb &labelsDb);
+            /// \param iconsDb : icons database.
+            void fillLabels(const Labels &labels, const LabelsDb &labelsDb, const IconsDb &iconsDb);
 
             /// \brief Fills bindings data from the definitions for a single device.
             ///
@@ -94,8 +121,8 @@ namespace Lazynput
             /// \return true if this input is present, false otherwise.
             bool hasInput(StrHash hash) const;
 
+            /// \overload
             /// \param name : the name of the interface's input name, in the form interfaceName.inputName.
-            /// \overload hasInput
             bool hasInput(const char *name) const;
 
             /// \brief Get the device's InputInfos for a given interface's input.
@@ -105,32 +132,30 @@ namespace Lazynput
             ///
             /// \param hash : a hashed string of the interface's input name, in the form interfaceName.inputName.
             /// \return the corresponding InputInfos if it exists or a dummy one.
-            const InputInfos getInputInfos(StrHash hash) const;
+            const InputInfos &getInputInfos(StrHash hash) const;
 
+            /// \overload
             /// \param name : the name of the interface's input name, in the form interfaceName.inputName.
-            /// \overload getInputInfos
-            const InputInfos getInputInfos(const char *name) const;
+            const InputInfos &getInputInfos(const char *name) const;
+
+            /// \brief Get the label of a given interface input.
+            ///
+            /// Returns a struct containing strings for displaying an input name. It has an ASCII string, an UTF-8
+            /// string and a variable name so you have different ways to handle non-ASCII characters. If the input
+            /// doesn't have a label, it's filled with generic names such as "B1".
+            ///
+            /// \param hash : a hashed string of the interface's input name, in the form interfaceName.inputName.
+            /// \return A displayable LabelInfos based on the input's InputInfos.
+            const LabelInfos &getLabel(StrHash hash) const;
+
+            /// \overload
+            /// \param name : the name of the interface's input name, in the form interfaceName.inputName.
+            const LabelInfos &getLabel(const char *name) const;
 
             /// \brief Get the begin and end constant iterators over the device's InputInfos.
             /// \return The iterators.
             std::pair<StrHashMap<InputInfos>::const_iterator, StrHashMap<InputInfos>::const_iterator>
                     getInputInfosIterators() const;
-
-            /// \brief Get an english ASCII displayable label based on the label infos.
-            ///
-            /// A simple way to get an english string to display the input label. If it's a dollar name supposed to
-            /// be replaced by an icon, it's replaced by an english string. If the input doesn't have a label, it
-            /// returns 'A', 'B', 'H' or 'R' folowed by the input number starting at 1 and eventual modifiers.
-            /// If it's a complex binding, it returns only the first input.
-            /// If it's not bound, it returns "Nothing".
-            ///
-            /// \param hash : a hashed string of the interface's input name, in the form interfaceName.inputName.
-            /// \return A displayable LabelInfos based on the input's InputInfos.
-            LabelInfos getEnglishAsciiLabelInfos(StrHash hash) const;
-
-            /// \param name : the name of the interface's input name, in the form interfaceName.inputName.
-            /// \overload getEnglishAsciiLabelInfos
-            LabelInfos getEnglishAsciiLabelInfos(const char *name) const;
 
             /// \brief Get device's name.
             /// \return The device's name.

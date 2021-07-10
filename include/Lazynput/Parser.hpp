@@ -68,16 +68,23 @@ namespace Lazynput
             /// \return true if successfully parsed, false otherwise.
             bool parseInterfacesBlock();
 
+            /// \brief Parse an icons block.
+            ///
+            /// Parse icons data from a text input stream. Existing data will be overrided.
+            ///
+            /// \return true if successfully parsed, false otherwise.
+            bool parseIconsBlock();
+
             /// \brief Parses a labels definition block.
             /// \param interfaces : sorted vector containing interfaces to look for, or nullptr for a preset definition.
             /// \param labels : hashmap to be filled. Can be modified even if the parsing fails.
             /// \return true if successfully parsed, false otherwise.
-            bool parseLabelsSubBlock(const std::vector<StrHash> *interfaces, StrHashMap<LabelInfos> &labels);
+            bool parseLabelsSubBlock(const std::vector<StrHash> *interfaces, StrHashMap<DbLabelInfos> &labels);
 
             /// \brief Parse a labels block from input stream.
             ///
             /// Parse labels data from a text input stream. Existing data will be overrided and applied to all devices,
-            /// boarh already parsed and parsed afterwards.
+            /// both already parsed and parsed afterwards.
             ///
             /// \return true if successfully parsed, false otherwise.
             bool parseLabelsBlock();

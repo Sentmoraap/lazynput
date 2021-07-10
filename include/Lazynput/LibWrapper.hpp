@@ -106,8 +106,8 @@ namespace Lazynput
             /// \param hash : a hashed string of the interface's input name, in the form interfaceName.inputName.
             float getInputValue(uint8_t device, StrHash hash) const;
 
+            /// \overload
             /// \param name : the name of the interface's input name, in the form interfaceName.inputName.
-            /// \overload getInputValue
             float getInputValue(uint8_t device, const char *name) const;
 
             /// \brief Get a device's number of absolute axes.

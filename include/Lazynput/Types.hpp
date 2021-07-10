@@ -83,13 +83,22 @@ namespace Lazynput
     struct LabelInfos
     {
         /// True if this input has a distinctive color.
-        bool hasColor : 1;
+        bool hasColor = false;
+
+        /// True if it actually has a label, false if it's a generated generic name.
+        bool hasLabel = false;
 
         /// Input's color if provided, dummy value otherwise.
         Color color;
 
-        /// Input's label if provided, can be empty.
-        std::string label;
+        /// ASCII label, provided or generated.
+        std::string ascii;
+
+        /// Unicode label, provided or generated.
+        std::string utf8;
+
+        /// Variable name for custom handling of non-ASCII labels.
+        std::string variableName;
     };
 
     /// \brief A single device's input binding, can be a part of a AND and OR of buttons.
@@ -115,7 +124,7 @@ namespace Lazynput
         FullBindingInfos binding;
 
         /// Label and color.
-        LabelInfos labelInfos;
+        LabelInfos label;
 
         /// \brief Check if the InputInfos corresponds to a real database entry or is a dummy one.
         /// \return true if it's a real device, false if it's a dummy one.

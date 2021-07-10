@@ -129,6 +129,7 @@ int main(int argc, char **argv)
     static constexpr uint8_t NUM_BLOCKS_X = (GAME_SIZE_X - BORDER_WIDTH * 2) / BLOCK_SIZE;
     static constexpr uint8_t NUM_BLOCKS_Y = (GAME_SIZE_Y - BORDER_WIDTH * 2) / BLOCK_SIZE;
     static constexpr uint8_t BLOCK_HP = 2;
+    static constexpr int NUM_FONTS = 3;
 
     // SFML primitives
     sf::Color borderColor(64, 64, 64);
@@ -140,10 +141,11 @@ int main(int argc, char **argv)
     characterRect.setFillColor(sf::Color(64,192,64));
     sf::RectangleShape blockRect(sf::Vector2f(BLOCK_SIZE * GAME_SCALE, BLOCK_SIZE * GAME_SCALE));
     sf::Color blockColors[BLOCK_HP] = { sf::Color(192, 192, 192), sf::Color(128, 128, 128)};
-    sf::Font font;
-    font.loadFromFile("assets/sansation_regular.ttf");
+    sf::Font fonts[NUM_FONTS];
+    fonts[0].loadFromFile("assets/sansation_regular.ttf");
+    fonts[1].loadFromFile("assets/NotoSansSymbols-Regular.ttf");
+    fonts[2].loadFromFile("assets/NotoSansSymbols2-Regular.ttf");
     sf::Text text;
-    text.setFont(font);
     text.setCharacterSize(GAME_SCALE * TEXT_SIZE);
     text.setOutlineThickness(TEXT_OUTLINE_SIZE * GAME_SCALE);
     sf::Color defaultTextColor(255,255,255);
@@ -398,45 +400,78 @@ int main(int argc, char **argv)
             sf::FloatRect bounds = text.getLocalBounds();
             text.setPosition(INPUT_ALIGN_X * GAME_SCALE - bounds.width, lineHeight);
             window.draw(text);
-            auto setText = [&device, &text]
+            auto label2d = [&device]
                     (const std::string &defaultName, Lazynput::StrHash xAxis, Lazynput::StrHash yAxis)
             {
-                Lazynput::LabelInfos labelInfos = device.getEnglishAsciiLabelInfos(xAxis);
-                std::string xStr = labelInfos.label;
-                if(!xStr.empty())
+                Lazynput::LabelInfos label = device.getLabel(xAxis);
+                std::string xStr = label.utf8;
+                if(!xStr.empty() && label.hasLabel)
                 {
-                    std::string yStr = device.getEnglishAsciiLabelInfos(yAxis).label;
-                    if(xStr == yStr)
-                    {
-                        if(labelInfos.hasColor)
-                            text.setFillColor(sf::Color(labelInfos.color.r, labelInfos.color.g, labelInfos.color.b));
-                        text.setString(xStr);
-                        return;
-                    }
+                    std::string yStr = device.getLabel(yAxis).utf8;
+                    if(xStr == yStr) return label;
                 }
-                text.setString(defaultName);
+                label.hasColor = false;
+                label.utf8 = defaultName;
+                return label;
+            };
+            auto displayText = [&fonts, &defaultTextColor, &text, &window](const Lazynput::LabelInfos &label)
+            {
+                sf::String str = sf::String::fromUtf8(label.utf8.begin(), label.utf8.end());
+
+                // Select the first font containing all the characters
+                int font = 0;
+                for(; font < NUM_FONTS; font++)
+                {
+                    const sf::Glyph *noGlyph = &(fonts[font].getGlyph(0x104242, GAME_SCALE * TEXT_SIZE, false, 0));
+                    bool ok = true;
+                    for(uint32_t c : str)
+                    {
+                        const sf::Glyph *glyph = &(fonts[font].getGlyph(c, GAME_SCALE * TEXT_SIZE, false, 0));
+                        if(glyph == noGlyph)
+                        {
+                            ok = false;
+                            break;
+                        }
+                    }
+                    if(ok) break;
+                }
+                if(font < NUM_FONTS)
+                {
+                    text.setFont(fonts[font]);
+                    text.setString(str);
+                }
+                else
+                {
+                    // If no font found, use the ASII string instead
+                    text.setFont(fonts[0]);
+                    text.setString(label.ascii);
+                }
+                if(label.hasColor) text.setFillColor(sf::Color(label.color.r, label.color.g, label.color.b));
+                else text.setFillColor(defaultTextColor);
+                window.draw(text);
             };
             float textX = INPUT_TEXT_X * GAME_SCALE;
             if(hasDpad)
             {
-                setText("d-pad", "basic_gamepad.dpx"_hash, "basic_gamepad.dpy"_hash);
+                Lazynput::LabelInfos li = label2d("d-pad", "basic_gamepad.dpx"_hash, "basic_gamepad.dpy"_hash);
                 text.setPosition(textX, lineHeight);
-                window.draw(text);
+                displayText(li);
                 textX += text.getLocalBounds().width;
             }
             if(hasDpad && hasJoystick)
             {
                 text.setString(" or ");
                 text.setFillColor(defaultTextColor);
+                text.setFont(fonts[0]);
                 text.setPosition(textX, lineHeight);
                 window.draw(text);
                 textX += text.getLocalBounds().width;
             }
             if(hasJoystick)
             {
-                setText("left joystick", "basic_gamepad.lsx"_hash, "basic_gamepad.lsy"_hash);
+                Lazynput::LabelInfos li = label2d("left joystick", "basic_gamepad.lsx"_hash, "basic_gamepad.lsy"_hash);
                 text.setPosition(textX, lineHeight);
-                window.draw(text);
+                displayText(li);
             }
             if(!hasDpad && !hasJoystick)
             {
@@ -449,24 +484,22 @@ int main(int argc, char **argv)
             {
                 text.setString("Look around");
                 text.setFillColor(defaultTextColor);
+                text.setFont(fonts[0]);
                 bounds = text.getLocalBounds();
                 text.setPosition(INPUT_ALIGN_X * GAME_SCALE - bounds.width, lineHeight * line);
                 window.draw(text);
-                setText("right joystick", "basic_gamepad.rsx"_hash, "basic_gamepad.rsy"_hash);
+                Lazynput::LabelInfos li = label2d("right joystick", "basic_gamepad.rsx"_hash, "basic_gamepad.rsy"_hash);
                 text.setPosition(INPUT_TEXT_X * GAME_SCALE, lineHeight * 2);
-                window.draw(text);
+                displayText(li);
                 line++;
             }
             for(uint8_t i = 0; i <= GameInput::MAX; i++)
             {
                 text.setPosition(INPUT_TEXT_X * GAME_SCALE, lineHeight * line);
                 if(!device.hasInput(inputMappings[i].hash)) continue;
-                Lazynput::LabelInfos labelInfos = device.getEnglishAsciiLabelInfos(inputMappings[i].hash);
-                text.setString(labelInfos.label);
-                if(labelInfos.hasColor)
-                        text.setFillColor(sf::Color(labelInfos.color.r, labelInfos.color.g, labelInfos.color.b));
-                window.draw(text);
+                displayText(device.getInputInfos(inputMappings[i].hash).label);
                 text.setFillColor(defaultTextColor);
+                text.setFont(fonts[0]);
                 text.setString(inputMappings[i].name);
                 bounds = text.getLocalBounds();
                 text.setPosition(INPUT_ALIGN_X * GAME_SCALE - bounds.width, lineHeight * line);
@@ -480,9 +513,10 @@ int main(int argc, char **argv)
             text.setPosition(0,0);
             window.draw(text);
         }
+        text.setFillColor(defaultTextColor);
+        text.setFont(fonts[0]);
         if(paused)
         {
-            text.setFillColor(defaultTextColor);
             text.setString("[catchy beat]");
             sf::FloatRect bounds = text.getLocalBounds();
             text.setPosition(0.5 * (GAME_SIZE_X * GAME_SCALE - bounds.width),

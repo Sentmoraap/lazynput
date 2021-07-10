@@ -13,6 +13,9 @@ It gets it's data from a human-readable file. It's designed to be easily modifia
 inherit other devices, the labels needs to be set only once even if a device has different mappings and labels presets
 can be made for the most common cases like labels from a popular game console.
 
+The labels are UTF-8 strings, plus ASCII strings for compatibility. For symbols, it's close looking character(s) or a
+text description in english. Variable names are provided for custom handling such as translating texts or using images.
+
 It can be used like an input library with the use of a wrapper class. Wrappers are provided for SDL and SFML but it can
 be used with other input libraries as long as they provide joystick identification data. It can use less fully featured
 databases like SDL_GameController as a fallback. It also provides default, probably wrong mappings when a device is not
@@ -49,7 +52,7 @@ You can read the inputs for the controller 0 like this:
 You can display the device's labels and colors like this:
 
     const Lazynput::Device &device = libWrapper.getDevice(0);
-    std::cout << "Press " << device.getEnglishAsciiLabelInfos("basic_gamepad.a"_hash).label << " to jump.";
+    std::cout << "Press " << device.getLabel("basic_gamepad.a"_hash).utf8 << " to jump.";
 
 If it does not have a label, it will display something generic like "B1".
 
@@ -58,6 +61,6 @@ main.cpp is an example game with SFML.
 You may need to write a wrapper for the input library you are using. You can look at `SdlWrapper` and `SfmlWrapper` to
 know what you need to do.
 
-The library has Doxygen documentation.
+The library has Doxygen documentation. Run `doxygen` in the root folder then open `doc/html/index.html`.
 
 You can read the file `lazynputdb.txt` and it's comments to learn it's format.

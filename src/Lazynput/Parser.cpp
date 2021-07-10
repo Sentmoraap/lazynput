@@ -228,12 +228,71 @@ namespace Lazynput
         return false;
     }
 
-    bool Parser::parseLabelsSubBlock(const std::vector<StrHash> *interfaces, StrHashMap<LabelInfos> &labels)
+    bool Parser::parseIconsBlock()
+    {
+        enum : uint8_t {START, INSIDE_BLOCK, EXPECT_STRING, LINE_END} state = START;
+        StrHash hash, icon;
+        std::string token;
+
+        while(extractor.getNextToken(hash, &token))
+        {
+            switch(state)
+            {
+                case START:
+                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "{"_hash, token, INSIDE_BLOCK))
+                        return false;
+                    break;
+                case INSIDE_BLOCK:
+                    switch(hash)
+                    {
+                        case "}"_hash:
+                            return true;
+                        case "\n"_hash:
+                            break;
+                        default:
+                            if(!Utils::isNameCharacter(token[0]))
+                            {
+                                errorsWriter.unexpectedTokenError(token);
+                                return false;
+                            }
+                            else if(newDevicesDb.icons.count(hash))
+                            {
+                                errorsWriter.error("multiple definition of the icon " + token
+                                    + " in the same stream");
+                            }
+                            else
+                            {
+                                icon = hash;
+                                state = EXPECT_STRING;
+                            }
+                    }
+                    break;
+                case EXPECT_STRING:
+                    if(token[0] != '"')
+                    {
+                        errorsWriter.unexpectedTokenError(token);
+                        return false;
+                    }
+                    token.pop_back();
+                    token.erase(0,1);
+                    newDevicesDb.icons[icon] = token;
+                    state = LINE_END;
+                    break;
+                case LINE_END:
+                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "\n"_hash, token, INSIDE_BLOCK))
+                        return false;
+                    break;
+            }
+        }
+        return false;
+    }
+
+    bool Parser::parseLabelsSubBlock(const std::vector<StrHash> *interfaces, StrHashMap<DbLabelInfos> &labels)
     {
         enum : uint8_t {LINE_START, LINE_NAME, LINE_2ND_TOKEN, LINE_COLOR, LINE_END} state = LINE_START;
         StrHash hash, labelsHash, lineHash, interfaceHash;
         std::string token, labelsName, lineName, interfaceName;
-        LabelInfos *labelInfos;
+        DbLabelInfos *labelInfos;
         Interface *interface = nullptr;
 
         auto getLabelInput = [this, interfaces,
@@ -1154,6 +1213,7 @@ namespace Lazynput
             {
                 case StrHash():
                     oldDevicesDb.interfaces.insert(newDevicesDb.interfaces.begin(), newDevicesDb.interfaces.end());
+                    oldDevicesDb.icons.insert(newDevicesDb.icons.begin(), newDevicesDb.icons.end());
                     oldDevicesDb.stringFromHash.insert(newDevicesDb.stringFromHash.begin(),
                             newDevicesDb.stringFromHash.end());
                     oldDevicesDb.labels.insert(newDevicesDb.labels.begin(), newDevicesDb.labels.end());
@@ -1162,6 +1222,9 @@ namespace Lazynput
                     return true;
                 case "interfaces"_hash:
                     if(!parseInterfacesBlock()) return false;
+                    break;
+                case "icons"_hash:
+                    if(!parseIconsBlock()) return false;
                     break;
                 case "labels"_hash:
                     if(!parseLabelsBlock()) return false;

@@ -98,7 +98,7 @@ namespace Lazynput
                     {
                         return true;
                     }
-                    if(chr < 32 || chr > 127)
+                    if(chr < 32)
                     {
                         errorsWriter.illegalCharacterError(chr);
                         return false;

@@ -88,6 +88,26 @@ interfaces
     # arcade_stick, dance_pad, steering_wheel, flight_stick, etc...
 }
 
+icons
+{
+    # Map strings to unicode characters. An application can support displaying only ASCII strings, or unicode
+    # characters. The characters must be close enough to the actual icon to be confidently recognizable, but may not
+    # look exactly the same.
+    # UTF-8 is allowed here.
+    # This assumes text/emoji presentation is honoured.
+    ARROW_FILLED_UP         "⬆"     # 2B06
+    CHECKERBOARD_HEART      "♥"     # 2665 This should be in text presentation, different than ♥️.
+    CIRCLE                  "○"     # 25CB
+    CROSS                   "🞨"     # 1F7A8
+    HAMBURGER               "≡"     # 2261
+    SQUARE                  "□"     # 25A1
+    TRIANGLE                "△"     # 25B3
+    TRIANGLE_FILLED_DOWN    "▼"     # 25BC
+    TRIANGLE_FILLED_LEFT    "◀"     # 25C0
+    TRIANGLE_FILLED_RIGHT   "▶"     # 25B6
+    TRIANGLE_FILLED_UP      "▲"     # 25B2
+}
+
 labels
 {
     # This section provides labels that are commonly found on controllers.
@@ -202,7 +222,7 @@ labels
     {
         # Colors are kept, some controllers may feature them
         basic_gamepad:
-        select  "$PS5_CREATE Create"
+        select  "$PS5_CREATE \|/"
         start   "$HAMBURGER Options"    # Actually it looks more like a croque monsieur.
 
         extra:
@@ -490,7 +510,7 @@ devices
         labels =
         {
             a "A", b "B", c "C", x "X", y "Y", z "Z"
-            select "$SHIFT", start "Start"
+            select "$ARROW_FILLED_UP", start "Start"
         }
         # This mapping assumes the controller is in analogue mod (green LED)
         default:
@@ -1244,7 +1264,7 @@ devices
             a "A", b "B", c "C", x "X", y "Y", z "Z"
             l1 "L", r1 "R"
             select "-select", start "+start"
-            home "home" # Checkerboard heart pixel art
+            home "$CHECKERBOARD_HEART home"
         }
         default:
             dpx=h0x|a0|a2 dpy=h0y|a1|a3
@@ -1309,7 +1329,7 @@ devices
             a "B", b "A", x "Y", y "X"
             l1 "L1", li1 "L2", r1 "R1", ri1 "R2"
             select "-select", start "+start"
-            home "Home" # Heart pixel checkerboard
+            home "$CHECKERBOARD_HEART Home"
         }
         default:
             dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a3 rsy=a4
@@ -1427,7 +1447,7 @@ devices
         {
             l2 "L2", r2 "R2"
             ls "L3", rs "R3"
-            home "Home" # Has a pixel art icon
+            home "$CHECKERBOARD_HEARD Home"
             # Has a star button for turbo function
         }
         default:

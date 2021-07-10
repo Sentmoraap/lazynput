@@ -18,6 +18,22 @@ namespace Lazynput
     /// \brief (name, interface) hash map to store all interfaces definitions.
     using InterfacesDb = StrHashMap<Interface>;
 
+    /// \brief (name, string) hash map to replace dollar names with unicode strings.
+    using IconsDb = StrHashMap<std::string>;
+
+    /// \brief Informations about an input label and color.
+    struct DbLabelInfos
+    {
+        /// True if this input has a distinctive color.
+        bool hasColor : 1;
+
+        /// Input's color if provided, dummy value otherwise.
+        Color color;
+
+        /// Input's label if provided, can be empty.
+        std::string label;
+    };
+
     /// \brief Labels preset.
     struct Labels
     {
@@ -25,7 +41,7 @@ namespace Lazynput
         StrHash parent;
 
         /// Own labels.
-        StrHashMap<LabelInfos> map;
+        StrHashMap<DbLabelInfos> map;
     };
 
     /// \brief (name, labeld) hash map to store all labels presets.
@@ -57,7 +73,7 @@ namespace Lazynput
         std::vector<StrHash> presetsLabels;
 
         /// Own labels.
-        StrHashMap<LabelInfos> ownLabels;
+        StrHashMap<DbLabelInfos> ownLabels;
 
         /// All bindings for every config tag combinations. Outer struct is for no config tag.
         ConfigTagBindings bindings;
@@ -72,6 +88,9 @@ namespace Lazynput
     {
         /// Interface definitions.
         InterfacesDb interfaces;
+
+        // Icon definitions.
+        IconsDb icons;
 
         /// String from hash
         StrHashMap<std::string> stringFromHash;

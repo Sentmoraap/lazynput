@@ -54,7 +54,7 @@ namespace Lazynput
             /// \return a Device object if found, or a dummy Device object otherwise.
             Device getDevice(HidIds ids, const StrHash *configTags, int size) const;
 
-            /// \overload getDevice
+            /// \overload
             Device getDevice(HidIds ids) const;
 
             /// \brief Gets the interface input string corresponding to the hash.
