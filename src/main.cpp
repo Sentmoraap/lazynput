@@ -141,6 +141,9 @@ int main(int argc, char **argv)
     characterRect.setFillColor(sf::Color(64,192,64));
     sf::RectangleShape blockRect(sf::Vector2f(BLOCK_SIZE * GAME_SCALE, BLOCK_SIZE * GAME_SCALE));
     sf::Color blockColors[BLOCK_HP] = { sf::Color(192, 192, 192), sf::Color(128, 128, 128)};
+
+    // Text rendering
+    // Load several fonts to support a lot of Unicode characters
     sf::Font fonts[NUM_FONTS];
     fonts[0].loadFromFile("assets/sansation_regular.ttf");
     fonts[1].loadFromFile("assets/NotoSansSymbols-Regular.ttf");
@@ -400,6 +403,8 @@ int main(int argc, char **argv)
             sf::FloatRect bounds = text.getLocalBounds();
             text.setPosition(INPUT_ALIGN_X * GAME_SCALE - bounds.width, lineHeight);
             window.draw(text);
+
+            // For 2D inputs, use it's name if it's the same for both axes. If it's not the same, use a default name.
             auto label2d = [&device]
                     (const std::string &defaultName, Lazynput::StrHash xAxis, Lazynput::StrHash yAxis)
             {
@@ -414,6 +419,9 @@ int main(int argc, char **argv)
                 label.utf8 = defaultName;
                 return label;
             };
+
+            // Display a label. If one font can display it's Unicode characters, that font is used. If not, use the
+            // ASCII string instead.
             auto displayText = [&fonts, &defaultTextColor, &text, &window](const Lazynput::LabelInfos &label)
             {
                 sf::String str = sf::String::fromUtf8(label.utf8.begin(), label.utf8.end());
@@ -450,6 +458,7 @@ int main(int argc, char **argv)
                 else text.setFillColor(defaultTextColor);
                 window.draw(text);
             };
+
             float textX = INPUT_TEXT_X * GAME_SCALE;
             if(hasDpad)
             {
