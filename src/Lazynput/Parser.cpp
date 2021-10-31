@@ -732,7 +732,7 @@ namespace Lazynput
         }
         else
         {
-            if(fullBinding.back().back().type == DeviceInputType::NIL) fullBinding.empty();
+            if(fullBinding.back().back().type == DeviceInputType::NIL) fullBinding.clear();
             return true;
         }
     }

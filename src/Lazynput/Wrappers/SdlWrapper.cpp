@@ -191,7 +191,6 @@ namespace Lazynput
                             posBinding.options.half = false;
                             InputInfos &inputInfo = inputInfos[hash];
                             inputInfo.binding.emplace_back();
-                            inputInfo.binding.back();
                             inputInfo.binding.back().push_back(posBinding);
                         }
                     };
