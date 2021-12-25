@@ -290,7 +290,7 @@ namespace Lazynput
     bool Parser::parseLabelsSubBlock(const std::vector<StrHash> *interfaces, StrHashMap<DbLabelInfos> &labels)
     {
         enum : uint8_t {LINE_START, LINE_NAME, LINE_2ND_TOKEN, LINE_COLOR, LINE_END} state = LINE_START;
-        StrHash hash, labelsHash, lineHash, interfaceHash;
+        StrHash hash, lineHash, interfaceHash;
         std::string token, labelsName, lineName, interfaceName;
         DbLabelInfos *labelInfos;
         Interface *interface = nullptr;
@@ -471,7 +471,7 @@ namespace Lazynput
     bool Parser::parseLabelsBlock()
     {
         enum : uint8_t {START, INSIDE_BLOCK, LABELS_START, INHERITANCE, AFTER_INHERITANCE} state = START;
-        StrHash hash, labelsHash, lineHash, interfaceHash;
+        StrHash hash, labelsHash;
         std::string token, labelsName, lineName, interfaceName;
         Labels newLabels;
 
@@ -1030,7 +1030,7 @@ namespace Lazynput
         enum : uint8_t {START, INSIDE_BLOCK, AFTER_VID, EXPECT_PID, AFTER_PID, EXPECT_PARENT_VID, AFTER_PARENT_VID,
                 EXPECT_PARENT_PID, AFTER_INHERITANCE}
                 state = START;
-        StrHash hash, inputHash;
+        StrHash hash;
         std::string token;
         DeviceData device;
         std::vector<StrHash> deviceInterfaces;

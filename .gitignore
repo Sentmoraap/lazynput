@@ -1,4 +1,5 @@
 doc/
 build/
 *.gch
+*.swp
 .atom-build.json
