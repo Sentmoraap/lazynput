@@ -49,7 +49,7 @@ namespace Lazynput
             float andValue = 1.f;
             for(const SingleBindingInfos &singleBinding : andBinding)
             {
-                float singleValue;
+                float singleValue = 0.f;
                 switch(singleBinding.type)
                 {
                     case Lazynput::DeviceInputType::NIL:
