@@ -134,9 +134,6 @@ namespace Lazynput
                         singleBinding.options.invert = false;
                         switch(bind.bindType)
                         {
-                            case SDL_CONTROLLER_BINDTYPE_NONE:
-                                // To supress the warning, should not happen.
-                                break;
                             case SDL_CONTROLLER_BINDTYPE_BUTTON:
                                 singleBinding.type = DeviceInputType::BUTTON;
                                 singleBinding.index = bind.value.button;
@@ -152,6 +149,11 @@ namespace Lazynput
                                 singleBinding.options.invert =
                                         bind.value.hat.hat_mask & (SDL_HAT_UP | SDL_HAT_LEFT);
                                 if(bind.value.hat.hat_mask & (SDL_HAT_UP | SDL_HAT_DOWN)) singleBinding.index++;
+                                break;
+                            default:
+                                // To supress the warnings, should not happen.
+                                singleBinding.type = DeviceInputType::NIL;
+                                singleBinding.index = 0;
                                 break;
                         }
                     };
