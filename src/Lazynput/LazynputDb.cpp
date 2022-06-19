@@ -7,7 +7,7 @@
 #include <fstream>
 #include <string.h>
 
-using namespace Lazynput::Litterals;
+using namespace Lazynput::Literals;
 
 namespace Lazynput
 {
@@ -110,6 +110,8 @@ namespace Lazynput
         #endif
         if(path)
         {
+            #pragma GCC diagnostic ignored "-Wrestrict" // Dumb GCC still think that the else branch can be taken
+            #pragma GCC diagnostic ignored "-Wformat-truncation" // when path == str
             if(path == str) strcat(str, "/lazynput/lazynputdb.txt");
             else snprintf(str, 256, "%s/lazynput/lazynputdb.txt", path);
             std::fstream file;

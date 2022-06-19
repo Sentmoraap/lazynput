@@ -161,7 +161,7 @@ labels
 
     nintendo_gamecube
     {
-        # Due to it's unsual layout, ABXY are mapped as if it's a diamond-shaped Nintendo controller.
+        # Due to it's unusual layout, ABXY are mapped as if it's a diamond-shaped Nintendo controller.
         # There is not a good way to map the triggers. Here, L & R are l2 & r2, Z is r1.
         # Axes with clicks are not supported. For now they should be mapped on l3 & r3 and called "DL" & "DR"
 
@@ -311,10 +311,10 @@ devices
 
     # The mappings assumes the d-pads are exposed as d-pads and not as extra axes or buttons.
     # It also assumes that any axis exposed from the input library can be negative.
-    # Mapping an device axis to an interface button binds the whole axis' range by default.
+    # Mapping a device axis to an interface button binds the whole axis' range by default.
     # You can map device's half axes and inverted axes if needed.
 
-    # You can use & and | to bind several devices inputs to one interfae input, for example is a pair of trigger is
+    # You can use & and | to bind several devices inputs to one interfae input, for example is a pair of triggers is
     # seen as a single axis and two buttons, you can do something like l2=a3-|b6&b7 r2=a3+|b6&b7 for supporting both
     # analog input and simultaneous (but digital) input.
 

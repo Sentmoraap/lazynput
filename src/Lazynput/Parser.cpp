@@ -6,7 +6,7 @@
 #include "Lazynput/PrivateTypes.hpp"
 #include "Lazynput/Utils.hpp"
 
-using namespace Lazynput::Litterals;
+using namespace Lazynput::Literals;
 
 namespace Lazynput
 {

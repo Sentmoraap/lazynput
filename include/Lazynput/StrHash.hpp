@@ -28,7 +28,7 @@ namespace Lazynput
                 return (prevHash << 5) + prevHash + chr;
             }
 
-            /// \brief Recursive constexpr hash computation used by the litteral
+            /// \brief Recursive constexpr hash computation used by the literal
             /// \param chr : the string left to hash
             /// \param prevHash ; the hashed part's hash value.
             /// \return ; the string's hash value.
@@ -84,9 +84,9 @@ namespace Lazynput
     /// \brief unordered_map with StrHash as a prehashed key_type.
     template<typename T> using StrHashMap = std::unordered_map<StrHash, T, StrHashIdentity>;
 
-    namespace Litterals
+    namespace Literals
     {
-        /// \brief String litteral to compute a string's hash.
+        /// \brief String literal to compute a string's hash.
         /// \param str : a C string.
         /// \return the string's hash.
         constexpr StrHash operator""_hash(const char *str, std::size_t size)

@@ -4,7 +4,7 @@
 
 namespace Lazynput
 {
-    using namespace Litterals;
+    using namespace Literals;
 
     LibWrapper::LibWrapper(const LazynputDb &lazynputDb) : lazynputDb(lazynputDb)
     {

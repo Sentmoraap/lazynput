@@ -35,7 +35,7 @@ make it a submodule. The main.cpp example program is outside those folders on pu
 ## Usage
 The initialization looks like this:
 
-    using namespace Lazynput::Litterals; // To use the _hash litteral.
+    using namespace Lazynput::Literals; // To use the _hash literal.
     Lazynput::LazynputDb lazynputDb;
     lazynputDb.parseFromDefault(&std::cerr); // Look for lazynputdb.txt in default paths.
 

@@ -6,7 +6,7 @@
 
 namespace Lazynput
 {
-    using namespace Litterals;
+    using namespace Literals;
 
     SfmlWrapper::SfmlWrapper(const LazynputDb &lazynputDb) : LibWrapper(lazynputDb)
     {

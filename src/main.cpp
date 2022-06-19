@@ -12,7 +12,7 @@
 #include "Lazynput/Wrappers/SfmlWrapper.hpp"
 #endif
 
-using namespace Lazynput::Litterals;
+using namespace Lazynput::Literals;
 
 // Lazynput is not an input manager so this program needs a way to know when a button is just pressed.
 struct NewpressAction
