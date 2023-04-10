@@ -2,6 +2,7 @@
 #include "Lazynput/PrivateTypes.hpp"
 #include <algorithm>
 #include <string>
+#include <assert.h>
 
 namespace Lazynput
 {
@@ -53,7 +54,7 @@ namespace Lazynput
         switch(inputInfos.binding[0][0].type)
         {
             case Lazynput::DeviceInputType::NIL:
-                // Should not happen
+                assert(false);
                 break;
             case Lazynput::DeviceInputType::BUTTON:
                 inputInfos.label.ascii.push_back('B');

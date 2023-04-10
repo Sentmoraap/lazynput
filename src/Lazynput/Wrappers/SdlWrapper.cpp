@@ -110,11 +110,11 @@ namespace Lazynput
             Lazynput::HidIds hidIds;
             hidIds.vid = guidBytes[5] << 8 | guidBytes[4];
             hidIds.pid = guidBytes[9] << 8 | guidBytes[8];
-            uint16_t driverVersion = guidBytes[13] << 8 | guidBytes[12];
-            char driverStr[20];
-            snprintf(driverStr, 20, "driver_version=%04x", driverVersion);
-            StrHash driverHash = StrHash::make(driverStr);
-            configTags.push_back(driverHash);
+            uint16_t deviceVersion = guidBytes[13] << 8 | guidBytes[12];
+            char versionStr[20];
+            snprintf(versionStr, 20, "device_version=%04x", deviceVersion);
+            StrHash versionHash = StrHash::make(versionStr);
+            configTags.push_back(versionHash);
             devicesData[slot].device = lazynputDb.getDevice(hidIds, configTags.data(), configTags.size());
             configTags.pop_back();
             if(devicesData[slot].device) devicesData[slot].status = DeviceStatus::SUPPORTED;

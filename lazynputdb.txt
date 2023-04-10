@@ -289,7 +289,7 @@ labels
         ls      "LS"
         rs      "RS"
         select  "$TRIANGLE_FILLED_LEFT Back"
-        start   "$TRIANGLE_FILLER_RIGHT Start"
+        start   "$TRIANGLE_FILLED_RIGHT Start"
 
         extended_gamepad:
         home    "$XBOX_LOGO Guide"

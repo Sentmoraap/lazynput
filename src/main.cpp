@@ -8,7 +8,15 @@
 #include <SDL2/SDL.h>
 #include "Lazynput/Wrappers/SdlWrapper.hpp"
 #undef main
-#else
+#endif
+
+#ifdef LAZYNPUT_USE_GLFW_WRAPPER
+#define GLFW_INLCUDE_NONE
+#include <GLFW/glfw3.h>
+#include "Lazynput/Wrappers/GlfwWrapper.hpp"
+#endif
+
+#ifdef LAZYNPUT_USE_SFML_WRAPPER
 #include "Lazynput/Wrappers/SfmlWrapper.hpp"
 #endif
 
@@ -183,7 +191,16 @@ int main(int argc, char **argv)
         SDL_GameControllerAddMappingsFromFile("./gamecontrollerdb.txt");
         Lazynput::SdlWrapper sdlWrapper(lazynputDb);
         Lazynput::LibWrapper &libWrapper = sdlWrapper;
-    #else
+    #endif
+
+    #ifdef LAZYNPUT_USE_GLFW_WRAPPER
+        glfwInitHint(GLFW_JOYSTICK_HAT_BUTTONS, GLFW_FALSE);
+        glfwInit();
+        Lazynput::GlfwWrapper glfwWrapper(lazynputDb);
+        Lazynput::LibWrapper &libWrapper = glfwWrapper;
+    #endif
+
+    #ifdef LAZYNPUT_USE_SFML_WRAPPER
         Lazynput::SfmlWrapper sfmlWrapper(lazynputDb);
         Lazynput::LibWrapper &libWrapper = sfmlWrapper; // To be sure this program uses only the parent class interface.
     #endif
@@ -384,12 +401,12 @@ int main(int argc, char **argv)
 
         // Draw texts
         text.setFillColor(defaultTextColor);
-        if(libWrapper.getDeviceStatus(0) >= Lazynput::LibWrapper::DeviceStatus::UNSUPPORTED)
+        Lazynput::LibWrapper::DeviceStatus deviceStatus = libWrapper.getDeviceStatus(0);
+        if(deviceStatus >= Lazynput::LibWrapper::DeviceStatus::UNSUPPORTED)
         {
             const Lazynput::Device &device = libWrapper.getDevice(0);
             text.setPosition(0, 0);
             sf::String deviceName(device.getName());
-            Lazynput::LibWrapper::DeviceStatus deviceStatus = libWrapper.getDeviceStatus(0);
             if(deviceStatus == Lazynput::LibWrapper::DeviceStatus::FALLBACK)
                 deviceName += " [fallback]";
             else if(deviceStatus == Lazynput::LibWrapper::DeviceStatus::UNSUPPORTED)
@@ -404,8 +421,9 @@ int main(int argc, char **argv)
             text.setPosition(INPUT_ALIGN_X * GAME_SCALE - bounds.width, lineHeight);
             window.draw(text);
 
-            // For 2D inputs, use it's name if it's the same for both axes. If it's not the same, use a default name.
-            auto label2d = [&device]
+            // For 2D inputs, use it's name if it's the same for both axes. If it's not the same and it's a supported
+            // device, use a default name.
+            auto label2d = [&device, deviceStatus]
                     (const std::string &defaultName, Lazynput::StrHash xAxis, Lazynput::StrHash yAxis)
             {
                 Lazynput::LabelInfos label = device.getLabel(xAxis);
@@ -416,7 +434,8 @@ int main(int argc, char **argv)
                     if(xStr == yStr) return label;
                 }
                 label.hasColor = false;
-                label.utf8 = defaultName;
+                if(deviceStatus > Lazynput::LibWrapper::DeviceStatus::UNSUPPORTED) label.utf8 = defaultName;
+                else label.utf8 = (xStr + " " + device.getLabel(yAxis).utf8).c_str();
                 return label;
             };
 

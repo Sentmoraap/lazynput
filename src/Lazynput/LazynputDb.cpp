@@ -110,8 +110,10 @@ namespace Lazynput
         #endif
         if(path)
         {
+            #ifdef __GNUC__
             #pragma GCC diagnostic ignored "-Wrestrict" // Dumb GCC still think that the else branch can be taken
             #pragma GCC diagnostic ignored "-Wformat-truncation" // when path == str
+            #endif
             if(path == str) strcat(str, "/lazynput/lazynputdb.txt");
             else snprintf(str, 256, "%s/lazynput/lazynputdb.txt", path);
             std::fstream file;
