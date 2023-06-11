@@ -27,12 +27,10 @@ namespace Lazynput
         for(uint8_t i = 0; i < sf::Joystick::PovX; i++)
         {
             uint8_t reorderedAxis = i;
-            #ifdef __linux__
-                // SFML maps RX RY and RZ in an unexpected order
-                if(i == 3) reorderedAxis = 4;
-                else if(i == 4) reorderedAxis = 5;
-                else if(i == 5) reorderedAxis = 3;
-            #endif
+            // SFML maps RX RY and RZ in an unexpected order
+            if(i == 3) reorderedAxis = 4;
+            else if(i == 4) reorderedAxis = 5;
+            else if(i == 5) reorderedAxis = 3;
             if(sf::Joystick::hasAxis(device, static_cast<sf::Joystick::Axis>(reorderedAxis)))
             {
                 if(axisCount == axis) return reorderedAxis;

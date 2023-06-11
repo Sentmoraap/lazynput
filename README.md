@@ -16,7 +16,7 @@ can be made for the most common cases like labels from a popular game console.
 The labels are UTF-8 strings, plus ASCII strings for compatibility. For symbols, it's close looking character(s) or a
 text description in english. Variable names are provided for custom handling such as translating texts or using images.
 
-It can be used like an input library with the use of a wrapper class. Wrappers are provided for SDL and SFML but it can
+It can be used like an input library with the use of a wrapper class. Wrappers are provided for SDL, SFML and GLFW but it can
 be used with other input libraries as long as they provide joystick identification data. It can use less fully featured
 databases like SDL_GameController as a fallback. It also provides default, probably wrong mappings when a device is not
 present in any database so you can still read inputs the same way.
