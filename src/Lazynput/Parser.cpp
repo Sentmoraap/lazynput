@@ -748,6 +748,7 @@ namespace Lazynput
         bool nameDefined = false, interfacesDefined = false, labelsDefined = false;
         std::vector<ConfigTagBindings*> tagsStack;
         tagsStack.reserve(4);
+        uint8_t stackPos = 0;
         Interface *interface;
 
         while(extractor.getNextToken(hash, &token))
@@ -933,8 +934,17 @@ namespace Lazynput
                     {
                         case "\n"_hash:
                             break;
+                        case "{"_hash:
+                            stackPos++;
+                            if(stackPos > tagsStack.size() - 1)
+                            {
+                                errorsWriter.error("no config tag to nest");
+                            }
+                            break;
                         case "}"_hash:
-                            return true;
+                            if(stackPos) stackPos--;
+                            else return true;
+                            break;
                         default:
                             if(!Utils::isNameCharacter(token[0]))
                             {

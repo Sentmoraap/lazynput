@@ -36,7 +36,6 @@ namespace Lazynput
                         return c2i(c[1]) | c2i(c[0]) << 4 | c2i(c[3]) << 8 | c2i(c[2]) << 12;
                     };
                     const char *guid = glfwGetJoystickGUID(i);
-                    std::cout << guid << std::endl;
                     Lazynput::HidIds hidIds;
                     // Method based on an incorrect behaviour.
                     // It needs a better way to distinguish an XInput controller.
@@ -70,13 +69,6 @@ namespace Lazynput
                             devicesData[i].device.setName(glfwGetJoystickName(i));
                     }
                 }
-                /*else
-                {
-                    int count;
-                    const float *axes = glfwGetJoystickAxes(0, &count);
-                    for (int i = 0; i < count; i++) std::cout << "a" << i << "=" << axes[i] << " ";
-                    std::cout << std::endl;
-                }*/
             }
             else devicesData[i].status = DeviceStatus::DISCONNECTED;
         }

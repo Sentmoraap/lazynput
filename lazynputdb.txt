@@ -321,7 +321,6 @@ devices
     # If a device needs different mappings depending on the operating system, driver version or some other parameters,
     # it can provide overrides depending on the parameters.
     # They can also be nested if needed.
-    # There are no examples in this list yet.
 
     # A lot of this data came from internet researches.  There may be some mistakes.
 
@@ -807,6 +806,11 @@ devices
             a=b2 b=b3 c=b23 x=b0 y=b1 z=b21 alpha=b16 beta=b18
             l1=b4 r1=b7 l2=b8 r2=b11 l3=b12 r3=b13 li1=b5 ri1=b6 li2=b9 ri2=b10
             ls=b14 rs=b15 select=b17 start=b20 capture=b19 home=b22
+        windows:
+        {
+            rsx=a3 rsy=a4
+            sfml: rsx=a2 rsy=a3
+        }
     }
 
     # Vendor ID 057e : Nintendo
