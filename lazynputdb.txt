@@ -808,6 +808,7 @@ devices
             ls=b14 rs=b15 select=b17 start=b20 capture=b19 home=b22
         windows:
         {
+            # The gamepad exposes Accelerator and Brake usages, which causes some weird axis dupplication on Windows
             rsx=a3 rsy=a4
             sfml: rsx=a2 rsy=a3
         }
@@ -1440,6 +1441,65 @@ devices
             a=b0 b=b1 x=b3 y=b4
             l1=b6 r1=b7 l2=b8 r2=b9
             select=b10 start=b11
+    }
+
+    2dc8.5111
+    {
+        # D mode
+        # S mode impersonates 057e.2009 Switch Pro Controller
+        name = "8BitDo Lite SE"
+        interfaces = basic_gamepad extended_gamepad
+        labels =
+        {
+            a       "B"
+            b       "A"
+            c       "R"
+            x       "Y"
+            y       "X"
+            z       "R2"
+            alpha   "L"
+            beta    "L2"
+            select  "-"
+            start   "+"
+            ls      "L3"
+            rs      "R3"
+            home    "$CHECKERBOARD_HEART home"
+            # Has a star button for turbo function
+        }
+        default:
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a3
+            a=b1 b=b0 x=b4 y=b3 c=b7 z=b9 alpha=b6 beta=b8
+            select=b10 start=b11 home=b12 ls=b13 rs=b14
+        windows:
+        {
+            # L2 and R2 are exposed as accelerator and brake axes in addition to buttons
+            # Those are correctlyu mapped in Linux, but for some reason in Windows it duplicates Y and RZ instead.
+            rsx=a3 rsy=a4
+            sfml: rsx=a2 rsy=a3
+        }
+    }
+
+    2dc8.5112
+    {
+        # D mode
+        # S mode impersonates 057e.2009 Switch Pro Controller
+        name = "8BitDo Lite 2"
+        interfaces = basic_gamepad extended_gamepad
+        labels = nintendo_modern +
+        {
+            home    "$CHECKERBOARD_HEART home"
+        }
+        default:
+            dpx=h0x dpy=h0y lsx=a0 lsy=a1 rsx=a2 rsy=a3
+            a=b1 b=b0 x=b4 y=b3 l1=b6 r1=b7 l2=b8 r2=b9
+            select=b10 start=b11 home=b12 ls=b13 rs=b14
+        windows:
+        {
+            # L2 and R2 are exposed as accelerator and brake axes in addition to buttons
+            # Those are correctlyu mapped in Linux, but for some reason in Windows it duplicates Y and RZ instead.
+            rsx=a3 rsy=a4
+            sfml: rsx=a2 rsy=a3
+        }
     }
 
     2dc8.6000
