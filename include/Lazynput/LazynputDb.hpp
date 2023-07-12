@@ -49,7 +49,7 @@ namespace Lazynput
             /// The Device's mappings will be set according to the database info and the configuration tags list.
             ///
             /// \param ids : device HID ids.
-            /// \param hashs : a pointer to an array of hashed strings.
+            /// \param configTags : a pointer to an array of hashed strings.
             /// \param size : the array size.
             /// \return a Device object if found, or a dummy Device object otherwise.
             Device getDevice(HidIds ids, const StrHash *configTags, int size) const;

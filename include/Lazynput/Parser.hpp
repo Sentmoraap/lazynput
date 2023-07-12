@@ -148,7 +148,7 @@ namespace Lazynput
             /// \brief Constructs and initializes the parser.
             /// \param inStream : a istream providing the text input to be parsed.
             /// \param errors : a stream to write parsing errors, if any. Can be null.
-            /// \param interfacesDb : interfaces database to be updated if the stream is successfully parsed.
+            /// \param devicesDb : devices database to be updated if the stream is successfully parsed.
             Parser(std::istream &inStream, std::ostream *errors, DevicesDb &devicesDb);
 
             /// \brief Parses the input stream

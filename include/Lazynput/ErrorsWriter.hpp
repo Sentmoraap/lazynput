@@ -37,7 +37,7 @@ namespace Lazynput
             void unexpectedTokenError(const std::string &token);
 
             /// \brief Writes an error to the errors stream.
-            /// \param token : the error string
+            /// \param errorString : the error string
             void error(const std::string &errorString);
     };
 }

@@ -89,7 +89,7 @@ namespace Lazynput
         /// Interface definitions.
         InterfacesDb interfaces;
 
-        // Icon definitions.
+        /// Icon definitions.
         IconsDb icons;
 
         /// String from hash

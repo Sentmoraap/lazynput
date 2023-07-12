@@ -161,7 +161,7 @@ namespace Lazynput
 
             /// \brief Gets the difference of a device's relative axis since it's last update.
             /// \param device : the device slot.
-            /// \param hat : the device's relative axis number.
+            /// \param rel : the device's relative axis number.
             /// \return the difference since the last update.
             virtual float getRelDelta(uint8_t device, uint8_t rel) const {return 0.f;}
 
