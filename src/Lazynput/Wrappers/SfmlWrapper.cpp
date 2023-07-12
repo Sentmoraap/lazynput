@@ -67,11 +67,11 @@ namespace Lazynput
 
     std::pair<float, float> SfmlWrapper::getHatValues(uint8_t device, uint8_t hat) const
     {
-        return hat == 0 ? std::make_pair(sf::Joystick::getAxisPosition(device, sf::Joystick::PovX),
+        return hat == 0 ? std::make_pair(sf::Joystick::getAxisPosition(device, sf::Joystick::PovX) * 0.01f,
 #ifdef _WIN32
-                -sf::Joystick::getAxisPosition(device, sf::Joystick::PovY))
+                -sf::Joystick::getAxisPosition(device, sf::Joystick::PovY) * 0.01f)
 #else
-                sf::Joystick::getAxisPosition(device, sf::Joystick::PovY))
+                sf::Joystick::getAxisPosition(device, sf::Joystick::PovY) * 0.01f)
 #endif
                 : std::make_pair(0.f, 0.f);
     }

@@ -1,6 +1,7 @@
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
+#include <assert.h>
 #include "Lazynput/Parser.hpp"
 #include "Lazynput/StrHash.hpp"
 #include "Lazynput/PrivateTypes.hpp"
@@ -566,12 +567,25 @@ namespace Lazynput
         return false;
     }
 
-    bool Parser::parseSingleBindingInput(SingleBindingInfos &binding, bool &unparsedToken, StrHash &hash,
-        std::string &token)
+    bool Parser::parseSingleBindingInput(SingleBindingInfos &positive, SingleBindingInfos *negative,
+            bool &unparsedToken, StrHash &hash, std::string &token)
     {
         enum : uint8_t {MAY_INVERT, INPUT, AXIS_HALF} state = MAY_INVERT;
-        binding.options.half = false;
-        binding.options.invert = false;
+        positive.options.half = false;
+        positive.options.invert = false;
+        auto mirrorBinding = [this, &positive, negative]()
+        {
+            if(!negative) return true;
+            if(positive.options.half)
+            {
+                errorsWriter.error("can’t bind a button to a full axis");
+                return false;
+            }
+            positive.options.half = true;
+            *negative = positive;
+            negative->options.invert = !negative->options.invert;
+            return true;
+        };
         while(extractor.isNextTokenStuck() && extractor.getNextToken(hash, &token))
         {
             switch(state)
@@ -579,14 +593,14 @@ namespace Lazynput
                 case MAY_INVERT:
                     if(hash == "~"_hash)
                     {
-                        binding.options.invert = true;
+                        positive.options.invert = true;
                         state = INPUT;
                         break;
                     }
                 // Fallthrough
                 case INPUT:
                 {
-                    auto parseInputIndex = [this, &token, &binding]()
+                    auto parseInputIndex = [this, &token, &positive]()
                     {
                         char *endChar;
                         const char *beginChar = token.c_str();
@@ -602,30 +616,35 @@ namespace Lazynput
                             errorsWriter.error("index of " + token + " outside range [0-255]");
                             return &errorChar;
                         }
-                        binding.index = static_cast<uint8_t>(inputIndex);
+                        positive.index = static_cast<uint8_t>(inputIndex);
                         return endChar;
                     };
                     switch(token[0])
                     {
                         case 'a':
-                            binding.type = DeviceInputType::ABSOLUTE_AXIS;
+                            positive.type = DeviceInputType::ABSOLUTE_AXIS;
                             if(*(parseInputIndex())) return false;
-                            if(binding.options.invert) return true;
+                            if(positive.options.invert) return mirrorBinding();
                             else state = AXIS_HALF;
                             break;
                         case 'b':
-                            binding.type = DeviceInputType::BUTTON;
+                            positive.type = DeviceInputType::BUTTON;
                             if(*(parseInputIndex())) return false;
+                            if(negative)
+                            {
+                                errorsWriter.error("can’t bind a button to a full axis");
+                                return false;
+                            }
                             return true;
                         case 'h':
                         {
-                            binding.type = DeviceInputType::HAT;
+                            positive.type = DeviceInputType::HAT;
                             const char *endChar = parseInputIndex();
-                            binding.index *= 2;
+                            positive.index *= 2;
                             switch(*endChar)
                             {
                                 case 'y':
-                                    binding.index++;
+                                    positive.index++;
                                 // Fallthrough
                                 case 'x':
                                     if(!*(endChar + 1)) break;
@@ -634,24 +653,25 @@ namespace Lazynput
                                     if(endChar > token.c_str() + 1) errorsWriter.unexpectedTokenError(token);
                                     return false;
                             }
-                            if(binding.options.invert) return true;
+                            if(positive.options.invert) return mirrorBinding();
                             else state = AXIS_HALF;
                             break;
                         }
                         case 'r':
-                            binding.type = DeviceInputType::RELATIVE_AXIS;
+                            positive.type = DeviceInputType::RELATIVE_AXIS;
                             if(*(parseInputIndex()))
                             {
                                 errorsWriter.unexpectedTokenError(token);
                                 return false;
                             }
-                            if(binding.options.invert) return true;
+                            if(positive.options.invert) return mirrorBinding();
                             else state = AXIS_HALF;
                             break;
                         default:
                             if(hash == "nil"_hash)
                             {
-                                binding.type = DeviceInputType::NIL;
+                                positive.type = DeviceInputType::NIL;
+                                if(negative) negative->type = DeviceInputType::NIL;
                                 return true;
                             }
                             errorsWriter.error("unknown input " + token);
@@ -663,17 +683,17 @@ namespace Lazynput
                     switch(hash)
                     {
                         case "+"_hash:
-                            binding.options.half = true;
+                            positive.options.half = true;
                             break;
                         case "-"_hash:
-                            binding.options.invert = true;
-                            binding.options.half = true;
+                            positive.options.invert = true;
+                            positive.options.half = true;
                             break;
                         default:
                             unparsedToken = true;
                             break;
                     }
-                    return true;
+                    return mirrorBinding();
             }
         }
         if(state < AXIS_HALF)
@@ -681,12 +701,15 @@ namespace Lazynput
             errorsWriter.error("binding not complete");
             return false;
         }
-        else return true;
+        else return mirrorBinding();
     }
 
-    bool Parser::parseFullBindingInput(FullBindingInfos &fullBinding)
+    bool Parser::parseHalvesBindingInput(HalfBindingInfos &positive, HalfBindingInfos *negative)
     {
-        fullBinding.emplace_back();
+        assert(positive.empty());
+        assert(!negative || negative->empty());
+        positive.emplace_back();
+        if(negative) negative->emplace_back();
         bool hasToken = false;
         StrHash hash;
         std::string token;
@@ -696,10 +719,12 @@ namespace Lazynput
             switch(state)
             {
                 case BINDING:
-                    fullBinding.back().emplace_back();
-                    if(!parseSingleBindingInput(fullBinding.back().back(), hasToken, hash, token)) return false;
-                    if(fullBinding.back().back().type == DeviceInputType::NIL
-                            && (fullBinding.size() > 1 || fullBinding[0].size() > 1))
+                    positive.back().emplace_back();
+                    if(negative) negative->back().emplace_back();
+                    if(!parseSingleBindingInput(positive.back().back(), negative ? &negative->back().back() : nullptr,
+                            hasToken, hash, token)) return false;
+                    if(positive.back().back().type == DeviceInputType::NIL
+                            && (positive.size() > 1 || positive[0].size() > 1))
                     {
                         errorsWriter.error("nil input in complex binding");
                         return false;
@@ -712,7 +737,8 @@ namespace Lazynput
                     {
                         case "|"_hash:
                             state = BINDING;
-                            fullBinding.emplace_back();
+                            positive.emplace_back();
+                            if(negative) negative->emplace_back();
                             break;
                         case "&"_hash:
                             state = BINDING;
@@ -732,9 +758,31 @@ namespace Lazynput
         }
         else
         {
-            if(fullBinding.back().back().type == DeviceInputType::NIL) fullBinding.clear();
+            if(positive.back().back().type == DeviceInputType::NIL)
+            {
+                positive.clear();
+                if(negative) negative->clear();
+            }
             return true;
         }
+    }
+
+    bool Parser::parseDecomposeFullBindingInput(FullBindingInfos &fullBinding, InterfaceInputType inputType)
+    {
+        switch(inputType)
+        {
+            case InterfaceInputType::NIL:
+                assert(false);
+                break;
+            case InterfaceInputType::BUTTON:
+                return parseHalvesBindingInput(fullBinding.positive, nullptr);
+                break;
+            case InterfaceInputType::ABSOLUTE_AXIS:
+            case InterfaceInputType::RELATIVE_AXIS:
+                return parseHalvesBindingInput(fullBinding.positive, &fullBinding.negative);
+                break;
+        }
+        assert(false);
     }
 
     bool Parser::parseDevice(DeviceData &device, std::vector<StrHash> deviceInterfaces)
@@ -982,18 +1030,22 @@ namespace Lazynput
                             state = EXPECT_INPUT;
                             break;
                         case "="_hash: // The previous token should be an input.
-                            std::tie(prevHash, interface) = getInputInterface(deviceInterfaces, prevHash, prevToken);
-                            if(prevHash == StrHash()) return false;
-                            prevHash.hashCharacter('.');
-                            for(const char *c = prevToken.c_str(); *c; c++) prevHash.hashCharacter(*c);
-                            if(tagsStack.back()->bindings.count(prevHash))
+                        {
+                            StrHash fullHash;
+                            std::tie(fullHash, interface) = getInputInterface(deviceInterfaces, prevHash, prevToken);
+                            if(fullHash == StrHash()) return false;
+                            fullHash.hashCharacter('.');
+                            for(const char *c = prevToken.c_str(); *c; c++) fullHash.hashCharacter(*c);
+                            if(tagsStack.back()->bindings.count(fullHash))
                             {
                                 errorsWriter.error("input defined multiple times for the same config tag");
                                 return false;
                             }
-                            if(!parseFullBindingInput(tagsStack.back()->bindings[prevHash])) return false;
+                            if(!parseDecomposeFullBindingInput(tagsStack.back()->bindings[fullHash],
+                                    interface->at(prevHash))) return false;
                             state = TAG_OR_INPUT;
                             break;
+                        }
                         default:
                             errorsWriter.unexpectedTokenError(token);
                             return false;
@@ -1019,7 +1071,8 @@ namespace Lazynput
                     }
                     if(expectToken(reinterpret_cast<uint8_t*>(&state), hash, "="_hash, token, nextState))
                         return false;
-                    if(!parseFullBindingInput(tagsStack.back()->bindings[prevHash])) return false;
+                    if(!parseDecomposeFullBindingInput(tagsStack.back()->bindings[prevHash], interface->at(prevHash)))
+                            return false;
                     state = TAG_OR_INPUT;
                     break;
                 case EXPECT_EQUALS:

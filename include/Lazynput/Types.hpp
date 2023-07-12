@@ -114,14 +114,27 @@ namespace Lazynput
         InputOptions options;
     };
 
-    /// \brief Complete interface's input binding. Can be a OR (outer vector) of several ANDs (inner vectors).
-    typedef std::vector<std::vector<SingleBindingInfos>> FullBindingInfos;
+    /// \brief Binding for half an interface’s input.
+    ///
+    /// Binding for half an interface’s input if it can have negative values, or the whole input if it’s
+    /// positive-only. Can be a OR (outer vector) of several ANDs (inner vectors).
+    typedef std::vector<std::vector<SingleBindingInfos>> HalfBindingInfos;
+
+    /// \brief Complete interface’s input binding.
+    struct FullBindingInfos
+    {
+        /// Binding for the positive part, or the whole input if it does not have a negative part
+        HalfBindingInfos positive;
+
+        /// Binding for the positive part if the input can have a negative part
+        HalfBindingInfos negative;
+    };
 
     /// \brief Informations about an interface's input on a specific device with specific configTags.
     struct InputInfos
     {
         /// Real inputs to use as seen by the input libraty.
-        FullBindingInfos binding;
+        FullBindingInfos bindings;
 
         /// Label and color.
         LabelInfos label;

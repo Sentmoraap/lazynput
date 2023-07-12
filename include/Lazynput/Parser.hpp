@@ -100,17 +100,33 @@ namespace Lazynput
             /// \param hash : hash of the unparsed token
             /// \param token : unparsed token.
             /// \return true if successfully parsed, false otherwise.
-            bool parseSingleBindingInput(SingleBindingInfos &binding, bool &unparsedToken, StrHash &hash,
-                std::string &token);
+            bool parseSingleBindingInput(SingleBindingInfos &positive, SingleBindingInfos *negative,
+                    bool &unparsedToken, StrHash &hash, std::string &token);
 
-            /// \brief Parses a full binding definition.
+            /// \brief Parses a both halves of binding definition.
             ///
-            /// Parse a interface's input binding. Can be several device's inputs.
+            /// Parse a interface's input half binding. Can be several device's inputs.
+            /// Half an axis if it can have negative value, or the full input if it’s positive-only.
+            /// For bindings that has negative values, defines the bindings for both halves. In that case, it binds a
+            /// full axis, i.e. the negative part is the positive part mirrored.
             /// The function ends when it encounters a space.
             ///
-            /// \param fullBinding : binding to be filled. Expected to be empty.
+            /// \param positive : positive binding to be filled. Expected to be empty.
+            /// \param negative : negative binding to be filled if provided. Can be null. Expected to be empty.
             /// \return true if successfully parsed, false otherwise.
-            bool parseFullBindingInput(FullBindingInfos &fullBinding);
+            bool parseHalvesBindingInput(HalfBindingInfos &positive, HalfBindingInfos *negative);
+
+            /// \brief Decompose bindinf infos depending of the input types and parse the halves.
+            ///
+            /// Parse a interface's input binding. Can be several device's inputs.
+            /// Depending on the input type, the binding spans only the positive half or both halves.
+            /// For bindings that has negative values, defines the bindings for both halves. In that case, it binds a
+            /// full axis, i.e. the negative part is the positive part mirrored.
+            ///
+            /// \param fullBinding : binding to be filled. Expected to be empty.
+            /// \param inputType : the input type. Depending on it the full binding may or may not have a negative part.
+            /// \return true if successfully parsed, false otherwise.
+            bool parseDecomposeFullBindingInput(FullBindingInfos &fullBinding, InterfaceInputType inputType);
 
             /// \brief Parse a device definition.
             ///

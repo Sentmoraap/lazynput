@@ -1,5 +1,6 @@
 #include "Lazynput/LibWrapper.hpp"
 #include "Lazynput/LazynputDb.hpp"
+#include <assert.h>
 #include <algorithm>
 
 namespace Lazynput
@@ -38,52 +39,57 @@ namespace Lazynput
         return devicesData[index].device;
     }
 
-    float LibWrapper::getInputValue(uint8_t device, StrHash hash) const
+    float LibWrapper::getHalfInputValue(uint8_t device, const HalfBindingInfos &bindings) const
     {
-        if(getDeviceStatus(device) == DeviceStatus::DISCONNECTED) return 0.f;
-        float value = -1.f;
-        const FullBindingInfos &binding = getDevice(device).getInputInfos(hash).binding;
-        if(binding.empty()) return 0.f;
-        for(const auto &andBinding : binding)
+        float value = 0.f;
+        for(const auto &andBinding : bindings)
         {
             float andValue = 1.f;
             for(const SingleBindingInfos &singleBinding : andBinding)
             {
-                float singleValue = 0.f;
+                float singleValue;
                 switch(singleBinding.type)
                 {
                     case Lazynput::DeviceInputType::NIL:
-                        // Should not happen
-                        singleValue = 0.f;
+                        assert(false);
                         break;
                     case Lazynput::DeviceInputType::BUTTON:
-                        singleValue = getBtnPressed(device, singleBinding.index) ? 1.f : -1.f;
+                        singleValue = getBtnPressed(device, singleBinding.index) ? 1.f : -1;
                         break;
                     case Lazynput::DeviceInputType::HAT:
                     {
                         std::pair<float, float> values = getHatValues(device, singleBinding.index / 2);
                         singleValue = singleBinding.index % 2 ? values.second : values.first;
+                        if(singleBinding.options.half) singleValue = (singleValue + 1.f) * 0.5f;
                         break;
                     }
                     case Lazynput::DeviceInputType::ABSOLUTE_AXIS:
                         singleValue = getAbsValue(device, singleBinding.index);
+                        if(singleBinding.options.half) singleValue = (singleValue + 1.f) * 0.5f;
                         break;
                     case Lazynput::DeviceInputType::RELATIVE_AXIS:
                         singleValue = getRelDelta(device, singleBinding.index);
                         break;
                 }
-                if(singleBinding.options.invert) singleValue = -singleValue;
-                if(singleBinding.options.half)
+                if(singleBinding.options.invert)
                 {
-                    singleValue = 2.f * singleValue - 1.f;
-                    if(singleValue < -1.f) singleValue = 1.f;
+                    if(singleBinding.options.half) singleValue = 1.f - singleValue;
+                    else singleValue = -singleValue;
                 }
+                singleValue = std::max(0.f, singleValue);
                 andValue = std::min(andValue, singleValue);
             }
             value = std::max(value, andValue);
         }
-        if(lazynputDb.getInterfaceInputType(hash) == InterfaceInputType::BUTTON) value = (value + 1.f) * .5f;
         return value;
+    }
+
+    float LibWrapper::getInputValue(uint8_t device, StrHash hash) const
+    {
+        if(getDeviceStatus(device) == DeviceStatus::DISCONNECTED) return 0.f;
+        const FullBindingInfos &bindings = getDevice(device).getInputInfos(hash).bindings;
+        if(bindings.positive.empty() && bindings.negative.empty()) return 0.f;
+        return getHalfInputValue(device, bindings.positive) - getHalfInputValue(device, bindings.negative);
     }
 
     float LibWrapper::getInputValue(uint8_t device, const char *name) const
@@ -99,13 +105,22 @@ namespace Lazynput
         auto bindInput = [&inputInfos](uint8_t input, StrHash hash, DeviceInputType type)
         {
             InputInfos &inputInfo = inputInfos[hash];
-            inputInfo.binding.emplace_back();
-            inputInfo.binding.back().emplace_back();
-            SingleBindingInfos &singleBinding = inputInfo.binding.back().back();
-            singleBinding.options.half = false;
-            singleBinding.options.invert = false;
-            singleBinding.type = type;
-            singleBinding.index = input;
+            inputInfo.bindings.positive.emplace_back();
+            inputInfo.bindings.positive.back().emplace_back();
+            SingleBindingInfos &positiveBinding = inputInfo.bindings.positive.back().back();
+            positiveBinding.options.invert = false;
+            positiveBinding.type = type;
+            positiveBinding.index = input;
+            if(type == DeviceInputType::ABSOLUTE_AXIS || type == DeviceInputType::HAT)
+            {
+                positiveBinding.options.half = true;
+                inputInfo.bindings.negative.emplace_back();
+                inputInfo.bindings.negative.back().emplace_back();
+                SingleBindingInfos &negativeBinding = inputInfo.bindings.negative.back().back();
+                negativeBinding = positiveBinding;
+                negativeBinding.options.invert = true;
+            }
+            else positiveBinding.options.half = false;
         };
         auto bindButton = [&bindInput](uint8_t button, StrHash hash)
         {

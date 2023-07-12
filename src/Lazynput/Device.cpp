@@ -49,32 +49,37 @@ namespace Lazynput
     {
         inputInfos.label.ascii.clear();
         inputInfos.label.variableName.clear();
-        if(inputInfos.binding[0][0].options.invert && !inputInfos.binding[0][0].options.half)
+        const SingleBindingInfos &singlePositive = inputInfos.bindings.positive[0][0];
+        if(singlePositive.options.invert && !singlePositive.options.half)
                 inputInfos.label.ascii.push_back('~');
-        switch(inputInfos.binding[0][0].type)
+        switch(singlePositive.type)
         {
             case Lazynput::DeviceInputType::NIL:
                 assert(false);
                 break;
             case Lazynput::DeviceInputType::BUTTON:
                 inputInfos.label.ascii.push_back('B');
-                inputInfos.label.ascii += std::to_string(inputInfos.binding[0][0].index + 1);
+                inputInfos.label.ascii += std::to_string(singlePositive.index + 1);
                 break;
             case Lazynput::DeviceInputType::HAT:
                 inputInfos.label.ascii.push_back('H');
-                inputInfos.label.ascii += std::to_string(inputInfos.binding[0][0].index / 2 + 1);
+                inputInfos.label.ascii += std::to_string(singlePositive.index / 2 + 1);
                 break;
             case Lazynput::DeviceInputType::ABSOLUTE_AXIS:
                 inputInfos.label.ascii.push_back('A');
-                inputInfos.label.ascii += std::to_string(inputInfos.binding[0][0].index + 1);
+                inputInfos.label.ascii += std::to_string(singlePositive.index + 1);
                 break;
             case Lazynput::DeviceInputType::RELATIVE_AXIS:
                 inputInfos.label.ascii.push_back('R');
-                inputInfos.label.ascii += std::to_string(inputInfos.binding[0][0].index + 1);
+                inputInfos.label.ascii += std::to_string(singlePositive.index + 1);
                 break;
         }
-        if(inputInfos.binding[0][0].options.half)
-                inputInfos.label.ascii.push_back(inputInfos.binding[0][0].options.invert ? '-': '+');
+        if(singlePositive.options.half)
+        {
+            const SingleBindingInfos &singleNegative = inputInfos.bindings.negative[0][0];
+            if(singleNegative.type != singlePositive.type || singleNegative.index != singlePositive.index)
+                    inputInfos.label.ascii.push_back(singlePositive.options.invert ? '-': '+');
+        }
         inputInfos.label.utf8 = inputInfos.label.ascii;
     }
 
@@ -96,7 +101,7 @@ namespace Lazynput
     void Device::fillBindings(const StrHashMap<FullBindingInfos> &bindings)
     {
         for(auto it = bindings.begin(); it != bindings.end(); ++it)
-            inputInfos[it->first].binding = it->second;
+            inputInfos[it->first].bindings = it->second;
     }
 
     void Device::fillBindings(const ConfigTagBindings &bindings, const std::vector<StrHash> &configTags)
@@ -122,7 +127,8 @@ namespace Lazynput
     void Device::removeNilBindings()
     {
         for(auto it = inputInfos.begin(); it != inputInfos.end();)
-            if(it->second.binding.empty()) it = inputInfos.erase(it); else ++it;
+                if(it->second.bindings.positive.empty() && it->second.bindings.negative.empty())
+                it = inputInfos.erase(it); else ++it;
     }
 
     Device::Device(const DeviceData &deviceData, const DevicesDb &devicesDb, const std::vector<StrHash> &configTags)
@@ -133,7 +139,12 @@ namespace Lazynput
 
     bool Device::hasInput(StrHash hash) const
     {
-        return inputInfos.count(hash) && inputInfos.at(hash).binding.size() > 0;
+        if(inputInfos.count(hash))
+        {
+            const FullBindingInfos &bindings = inputInfos.at(hash).bindings;
+            return bindings.positive.size() > 0 || bindings.negative.size() > 0;
+        }
+        else return false;
     }
 
     bool Device::hasInput(const char *name) const
@@ -180,6 +191,8 @@ namespace Lazynput
     void Device::setInputInfos(StrHashMap<InputInfos> &&inputInfos)
     {
         this->inputInfos = std::move(inputInfos);
+
+        removeNilBindings();
 
         for(auto it = this->inputInfos.begin(); it != this->inputInfos.end(); ++it)
             if(!it->second.label.hasLabel) genGenericLabel(it->second);

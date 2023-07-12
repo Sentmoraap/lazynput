@@ -2,7 +2,9 @@
 
 #include "Lazynput/Wrappers/SdlWrapper.hpp"
 #include "Lazynput/LazynputDb.hpp"
+#include <assert.h>
 #include <SDL2/SDL_events.h>
+#include <SDL2/SDL_hints.h>
 
 namespace Lazynput
 {
@@ -128,7 +130,7 @@ namespace Lazynput
                     StrHashMap<InputInfos> inputInfos;
                     devicesData[slot].status = DeviceStatus::FALLBACK;
                     SDL_GameController *controller = SDL_GameControllerOpen(slot);
-                    auto setBinding = [](SDL_GameControllerButtonBind bind, SingleBindingInfos &singleBinding)
+                    auto setHalfBinding = [](SDL_GameControllerButtonBind bind, SingleBindingInfos &singleBinding)
                     {
                         singleBinding.options.half = false;
                         singleBinding.options.invert = false;
@@ -151,50 +153,54 @@ namespace Lazynput
                                 if(bind.value.hat.hat_mask & (SDL_HAT_UP | SDL_HAT_DOWN)) singleBinding.index++;
                                 break;
                             default:
-                                // To supress the warnings, should not happen.
-                                singleBinding.type = DeviceInputType::NIL;
-                                singleBinding.index = 0;
+                                assert(false);
                                 break;
                         }
                     };
-                    auto bindControl = [&inputInfos, &setBinding](SDL_GameControllerButtonBind bind,
-                            StrHash hash)
+                    auto setBinding = [&setHalfBinding](SDL_GameControllerButtonBind neg, SDL_GameControllerButtonBind pos,
+                            InputInfos &inputInfo)
                     {
-                        if(bind.bindType != SDL_CONTROLLER_BINDTYPE_NONE)
+                        SingleBindingInfos *posBinding = nullptr, *negBinding = nullptr;
+                        if(pos.bindType != SDL_CONTROLLER_BINDTYPE_NONE)
                         {
-                            InputInfos &inputInfo = inputInfos[hash];
-                            inputInfo.binding.emplace_back();
-                            inputInfo.binding.back().emplace_back();
-                            setBinding(bind, inputInfo.binding.back().back());
+                            inputInfo.bindings.positive.emplace_back();
+                            inputInfo.bindings.positive.back().emplace_back();
+                            posBinding = &inputInfo.bindings.positive.back().back();
+                            setHalfBinding(pos, *posBinding);
+                        }
+                        if(neg.bindType != SDL_CONTROLLER_BINDTYPE_NONE)
+                        {
+                            inputInfo.bindings.negative.emplace_back();
+                            inputInfo.bindings.negative.back().emplace_back();
+                            negBinding = &inputInfo.bindings.negative.back().back();
+                            setHalfBinding(neg, *negBinding);
+                        }
+                        if(posBinding && negBinding && posBinding->type == negBinding->type
+                                && posBinding->index == negBinding->index && !posBinding->options.half
+                                && !negBinding->options.half)
+                        {
+                            posBinding->options.half = true;
+                            negBinding->options.half = true;
+                            negBinding->options.invert = !negBinding->options.invert;
                         }
                     };
-                    auto bindButton = [&bindControl, controller](SDL_GameControllerButton button, StrHash hash)
+                    auto bindButton = [&inputInfos, &setBinding, controller](SDL_GameControllerButton button,
+                            StrHash hash)
                     {
-                        bindControl(SDL_GameControllerGetBindForButton(controller, button), hash);
+                        SDL_GameControllerButtonBind neg;
+                        neg.bindType = SDL_CONTROLLER_BINDTYPE_NONE;
+                        setBinding(neg, SDL_GameControllerGetBindForButton(controller, button), inputInfos[hash]);
                     };
-                    auto bindAxis = [&bindControl, controller](SDL_GameControllerAxis axis, StrHash hash)
+                    auto bindAxis = [&inputInfos, &setBinding, controller](SDL_GameControllerAxis axis, StrHash hash)
                     {
-                        bindControl(SDL_GameControllerGetBindForAxis(controller, axis), hash);
+                        SDL_GameControllerButtonBind bind = SDL_GameControllerGetBindForAxis(controller, axis);
+                        setBinding(bind, bind, inputInfos[hash]);
                     };
                     auto bindHat = [&inputInfos, &setBinding, controller](SDL_GameControllerButton neg,
                             SDL_GameControllerButton pos, StrHash hash)
                     {
-                        SingleBindingInfos negBinding, posBinding;
-                        setBinding(SDL_GameControllerGetBindForButton(controller, neg), negBinding);
-                        setBinding(SDL_GameControllerGetBindForButton(controller, pos), posBinding);
-                        if(negBinding.type == posBinding.type && negBinding.index == posBinding.index
-                                // Uncomment thesetwo lines when we can get SDL_ExtendedGameControllerBind
-                                // infos.
-                                //&& negBinding.options.invert == !posBinding.options.invert
-                                //&& negBinding.options.half == true && posBinding.options.half == true
-                                && (posBinding.type == DeviceInputType::HAT
-                                || posBinding.type == DeviceInputType::ABSOLUTE_AXIS))
-                        {
-                            posBinding.options.half = false;
-                            InputInfos &inputInfo = inputInfos[hash];
-                            inputInfo.binding.emplace_back();
-                            inputInfo.binding.back().push_back(posBinding);
-                        }
+                        setBinding(SDL_GameControllerGetBindForButton(controller, neg),
+                                SDL_GameControllerGetBindForButton(controller, pos), inputInfos[hash]);
                     };
                     bindButton(SDL_CONTROLLER_BUTTON_A, "basic_gamepad.a"_hash);
                     bindButton(SDL_CONTROLLER_BUTTON_B, "basic_gamepad.b"_hash);

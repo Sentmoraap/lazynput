@@ -41,6 +41,16 @@ namespace Lazynput
                 SUPPORTED
             };
 
+        private:
+            /// \brief Get an interface's half input value.
+            ///
+            /// Get an interface's half input value in the range [0; 1].
+            ///
+            ///
+            /// \param device : the device's slot index.
+            /// \param hash : a hashed string of the interface's input name, in the form interfaceName.inputName.
+            float getHalfInputValue(uint8_t device, const HalfBindingInfos &bindings) const;
+
         protected:
             /// \brief Data about connected devices.
             struct DeviceData
