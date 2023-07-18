@@ -23,6 +23,15 @@ namespace Lazynput
             /// Old devices database to check for redefinitions and to use previously parsed labels presets.
             DevicesDb &oldDevicesDb;
 
+            /// Which interface’s input axis halves this input defines. The default is FULL. When the interface’s input
+            /// is positive-only it must be the default value.
+            enum AxisHalves : uint8_t
+            {
+                NEGATIVE_ONLY, /// Only the negative half
+                POSITIVE_ONLY, /// Only the positive half
+                FULL /// Both halves
+            };
+
             /// \brief Switch to the next state if the next token is the expected token.
             ///
             /// Check if the next token is an opening brace or a new line.
@@ -125,8 +134,10 @@ namespace Lazynput
             ///
             /// \param fullBinding : binding to be filled. Expected to be empty.
             /// \param inputType : the input type. Depending on it the full binding may or may not have a negative part.
+            /// \param axisHalves : which axis halves to bind.
             /// \return true if successfully parsed, false otherwise.
-            bool parseDecomposeFullBindingInput(FullBindingInfos &fullBinding, InterfaceInputType inputType);
+            bool parseDecomposeFullBindingInput(FullBindingInfos &fullBinding, InterfaceInputType inputType,
+                    AxisHalves axisHalves);
 
             /// \brief Parse a device definition.
             ///

@@ -429,7 +429,7 @@ int main(int argc, char **argv)
             {
                 Lazynput::LabelInfos label = device.getLabel(xAxis);
                 std::string xStr = label.utf8;
-                if(!xStr.empty())
+                if(!xStr.empty() && label.hasLabel)
                 {
                     std::string yStr = device.getLabel(yAxis).utf8;
                     if(xStr == yStr) return label;

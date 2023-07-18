@@ -767,19 +767,32 @@ namespace Lazynput
         }
     }
 
-    bool Parser::parseDecomposeFullBindingInput(FullBindingInfos &fullBinding, InterfaceInputType inputType)
+    bool Parser::parseDecomposeFullBindingInput(FullBindingInfos &fullBinding, InterfaceInputType inputType,
+            AxisHalves axisHalves)
     {
+        if(((axisHalves == POSITIVE_ONLY || axisHalves == FULL) && fullBinding.positive.size())
+                || ((axisHalves == NEGATIVE_ONLY || axisHalves == FULL) && fullBinding.negative.size()))
+                return errorsWriter.error("input defined multiple times for the same config tag"), false;
         switch(inputType)
         {
             case InterfaceInputType::NIL:
                 assert(false);
                 break;
             case InterfaceInputType::BUTTON:
+                if(axisHalves != FULL) return errorsWriter.error("Cannot bind to half a button"), false;
                 return parseHalvesBindingInput(fullBinding.positive, nullptr);
                 break;
             case InterfaceInputType::ABSOLUTE_AXIS:
             case InterfaceInputType::RELATIVE_AXIS:
-                return parseHalvesBindingInput(fullBinding.positive, &fullBinding.negative);
+                switch(axisHalves)
+                {
+                    case NEGATIVE_ONLY:
+                        return parseHalvesBindingInput(fullBinding.negative, nullptr);
+                    case POSITIVE_ONLY:
+                        return parseHalvesBindingInput(fullBinding.positive, nullptr);
+                    case FULL:
+                        return parseHalvesBindingInput(fullBinding.positive, &fullBinding.negative);
+                }
                 break;
         }
         assert(false);
@@ -788,10 +801,11 @@ namespace Lazynput
     bool Parser::parseDevice(DeviceData &device, std::vector<StrHash> deviceInterfaces)
     {
         enum : uint8_t {INSIDE_DEVICE, EXPECT_NAME, EXPECT_INTERFACE, EXPECT_LABELS,
-                EXPECT_LABELS_BLOCK, TAG_OR_INPUT, END_TAG_OR_INPUT, EXPECT_INPUT, EXPECT_EQUALS, END_OF_LINE}
+                EXPECT_LABELS_BLOCK, TAG_OR_INPUT, END_TAG_OR_INPUT, EXPECT_INTERFACE_INPUT, EQUALS_DEVICE_INPUT,
+                EXPECT_EQUALS, END_OF_LINE}
                 state = INSIDE_DEVICE, nextState;
-
-        StrHash hash, prevHash;
+        AxisHalves axisHalves;
+        StrHash hash, prevHash, inputHash, interfaceHash;
         std::string token, prevToken;
         bool nameDefined = false, interfacesDefined = false, labelsDefined = false;
         std::vector<ConfigTagBindings*> tagsStack;
@@ -846,6 +860,7 @@ namespace Lazynput
 
                             if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, ":"_hash, token, TAG_OR_INPUT))
                                 return false;
+                            axisHalves = FULL;
                             break;
                         case "}"_hash:
                             return true;
@@ -1027,23 +1042,24 @@ namespace Lazynput
                                 return false;
                             }
                             interface = getInterface(prevHash);
-                            state = EXPECT_INPUT;
+                            state = EXPECT_INTERFACE_INPUT;
                             break;
+                        case "-"_hash:
+                            axisHalves = NEGATIVE_ONLY;
+                            if(false)
+                        // Fallthrough but skip to the "=" case
+                        case "+"_hash:
+                            axisHalves = POSITIVE_ONLY;
+                        // Fallthrough
                         case "="_hash: // The previous token should be an input.
                         {
-                            StrHash fullHash;
-                            std::tie(fullHash, interface) = getInputInterface(deviceInterfaces, prevHash, prevToken);
-                            if(fullHash == StrHash()) return false;
-                            fullHash.hashCharacter('.');
-                            for(const char *c = prevToken.c_str(); *c; c++) fullHash.hashCharacter(*c);
-                            if(tagsStack.back()->bindings.count(fullHash))
-                            {
-                                errorsWriter.error("input defined multiple times for the same config tag");
-                                return false;
-                            }
-                            if(!parseDecomposeFullBindingInput(tagsStack.back()->bindings[fullHash],
-                                    interface->at(prevHash))) return false;
-                            state = TAG_OR_INPUT;
+                            std::tie(inputHash, interface) = getInputInterface(deviceInterfaces, prevHash, prevToken);
+                            if(inputHash == StrHash()) return false;
+                            inputHash.hashCharacter('.');
+                            for(const char *c = prevToken.c_str(); *c; c++) inputHash.hashCharacter(*c);
+                            interfaceHash = prevHash;
+                            if(hash == "="_hash) goto parseDeviceInput;
+                            state = EQUALS_DEVICE_INPUT;
                             break;
                         }
                         default:
@@ -1051,7 +1067,7 @@ namespace Lazynput
                             return false;
                     }
                     break;
-                case EXPECT_INPUT:
+                case EXPECT_INTERFACE_INPUT:
                     if(!Utils::isNameCharacter(token[0]))
                     {
                         errorsWriter.unexpectedTokenError(token);
@@ -1064,16 +1080,18 @@ namespace Lazynput
                     }
                     prevHash.hashCharacter('.');
                     for(const char *c = prevToken.c_str(); *c; c++) prevHash.hashCharacter(*c);
-                    if(tagsStack.back()->bindings.count(prevHash))
-                    {
-                        errorsWriter.error("input defined multiple times for the same config tag");
-                        return false;
-                    }
-                    if(expectToken(reinterpret_cast<uint8_t*>(&state), hash, "="_hash, token, nextState))
-                        return false;
-                    if(!parseDecomposeFullBindingInput(tagsStack.back()->bindings[prevHash], interface->at(prevHash)))
-                            return false;
+                    state = EXPECT_EQUALS;
+                    nextState = EQUALS_DEVICE_INPUT;
+                    inputHash = prevHash;
+                    interfaceHash = hash;
+                    break;
+                case EQUALS_DEVICE_INPUT:
+                    if(hash != "="_hash) return errorsWriter.unexpectedTokenError(token), false;
+                parseDeviceInput:
+                    if(!parseDecomposeFullBindingInput(tagsStack.back()->bindings[inputHash],
+                            interface->at(interfaceHash), axisHalves)) return false;
                     state = TAG_OR_INPUT;
+                    axisHalves = FULL;
                     break;
                 case EXPECT_EQUALS:
                     if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "="_hash, token, nextState))
