@@ -801,8 +801,8 @@ namespace Lazynput
     bool Parser::parseDevice(DeviceData &device, std::vector<StrHash> deviceInterfaces)
     {
         enum : uint8_t {INSIDE_DEVICE, EXPECT_NAME, EXPECT_INTERFACE, EXPECT_LABELS,
-                EXPECT_LABELS_BLOCK, TAG_OR_INPUT, END_TAG_OR_INPUT, EXPECT_INTERFACE_INPUT, EQUALS_DEVICE_INPUT,
-                EXPECT_EQUALS, END_OF_LINE}
+                EXPECT_LABELS_BLOCK, TAG_OR_INPUT, TAG_ABSENT, END_TAG_OR_INPUT, EXPECT_INTERFACE_INPUT,
+                EQUALS_DEVICE_INPUT, EXPECT_EQUALS, END_OF_LINE}
                 state = INSIDE_DEVICE, nextState;
         AxisHalves axisHalves;
         StrHash hash, prevHash, inputHash, interfaceHash;
@@ -813,6 +813,20 @@ namespace Lazynput
         uint8_t stackPos = 0;
         Interface *interface;
 
+        auto newTag = [&tagsStack, &state, &stackPos, this](StrHash hash, bool isPresent)
+        {
+            tagsStack.erase(tagsStack.begin() + stackPos + 1, tagsStack.end());
+            ConfigTagPresent &configTagPresent = tagsStack[stackPos]->nestedConfigTags[hash];
+            if((configTagPresent.present && isPresent) || (configTagPresent.absent && !isPresent))
+            {
+                errorsWriter.error("config tag already defined");
+                return false;
+            }
+            tagsStack.push_back(new ConfigTagBindings());
+            (isPresent ? configTagPresent.present : configTagPresent.absent).reset(tagsStack.back());
+            state = TAG_OR_INPUT;
+            return true;
+        };
         while(extractor.getNextToken(hash, &token))
         {
             switch(state)
@@ -1008,6 +1022,9 @@ namespace Lazynput
                             if(stackPos) stackPos--;
                             else return true;
                             break;
+                        case "!"_hash:
+                            state = TAG_ABSENT;
+                            break;
                         default:
                             if(!Utils::isNameCharacter(token[0]))
                             {
@@ -1020,19 +1037,24 @@ namespace Lazynput
                             break;
                     }
                     break;
+                case TAG_ABSENT:
+                {
+                    if(!Utils::isNameCharacter(token[0]))
+                    {
+                        errorsWriter.unexpectedTokenError(token);
+                        return false;
+                    }
+                    StrHash nextHash;
+                    if(!extractor.getNextToken(nextHash, &token)) return false;
+                    if(nextHash != ":"_hash) return errorsWriter.unexpectedTokenError(token), false;
+                    if(!newTag(hash, false)) return false;
+                    break;
+                }
                 case END_TAG_OR_INPUT:
                     switch(hash)
                     {
                         case ":"_hash: // The previous token should be a config tag.
-                            tagsStack.erase(tagsStack.begin() + 1, tagsStack.end());
-                            if(tagsStack[0]->nestedConfigTags.count(prevHash))
-                            {
-                                errorsWriter.error("config tag already defined");
-                                return false;
-                            }
-                            tagsStack.push_back(new ConfigTagBindings());
-                            tagsStack[0]->nestedConfigTags[prevHash].reset(tagsStack.back());
-                            state = TAG_OR_INPUT;
+                            newTag(prevHash, true);
                             break;
                         case "."_hash: // The previous token should be an interface.
                             if(std::find(device.interfaces.begin(), device.interfaces.end(), prevHash)

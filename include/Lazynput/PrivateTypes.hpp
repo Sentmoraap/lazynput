@@ -47,14 +47,26 @@ namespace Lazynput
     /// \brief (name, labeld) hash map to store all labels presets.
     using LabelsDb = StrHashMap<Labels>;
 
+    struct ConfigTagPresent;
+
     /// \brief Bindings for a given config tag. Contains inner ConfigTagBindings for multiple config tags bindings.
     struct ConfigTagBindings
     {
         /// Bindings for nested config tags.
-        StrHashMap<std::unique_ptr<ConfigTagBindings>> nestedConfigTags;
+        StrHashMap<ConfigTagPresent> nestedConfigTags;
 
         /// Bindings for this config tag.
         StrHashMap<FullBindingInfos> bindings;
+    };
+
+    /// \brief Different bindings depending on if a given config tag is present or absent.
+    struct ConfigTagPresent
+    {
+        /// Bindings if the config tag is present.
+        std::unique_ptr<ConfigTagBindings> present;
+
+        /// Bindings if the config tag is absent.
+        std::unique_ptr<ConfigTagBindings> absent;
     };
 
     /// \brief Internal struct to store device data

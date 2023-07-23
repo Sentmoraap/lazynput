@@ -108,8 +108,14 @@ namespace Lazynput
     {
         fillBindings(bindings.bindings);
         for(auto it = bindings.nestedConfigTags.begin(); it != bindings.nestedConfigTags.end(); it++)
-                if(std::find(configTags.begin(), configTags.end(), it->first) != configTags.end())
-                        fillBindings(*it->second.get(), configTags);
+        {
+            bool present = std::find(configTags.begin(), configTags.end(), it->first) != configTags.end();
+            if(present)
+            {
+                if(it->second.present) fillBindings(*it->second.present, configTags);
+            }
+            else if(it->second.absent) fillBindings(*it->second.absent, configTags);
+        }
     }
 
     void Device::fillData(const DeviceData &deviceData, const DevicesDb &devicesDb,
