@@ -41,12 +41,13 @@ namespace Lazynput
             /// \param state : will be updated if the conditions are met.
             /// \param hash : next token's hash.
             /// \param expectedHash : expected token's hash.
+            /// \param skipNewLines : skip "\n" tokens and check the next non-newline token
             /// \param token : next token.
             /// \param nextState : updated value of state if the conditions are met.
             ///
             /// \return true if there are not errors, false orherwise
-            bool expectToken(uint8_t *state, StrHash hash, StrHash expectedHash, const std::string &token,
-                uint8_t nextState);
+            bool expectToken(uint8_t *state, StrHash hash, StrHash expectedHash, bool skipNewLine,
+                    std::string token, uint8_t nextState);
 
             /// \brief Returns the newest interface if it exists or nullprt.
             ///

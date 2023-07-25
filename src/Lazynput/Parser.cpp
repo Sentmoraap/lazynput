@@ -11,15 +11,15 @@ using namespace Lazynput::Literals;
 
 namespace Lazynput
 {
-    bool Parser::expectToken(uint8_t *state, StrHash hash, StrHash expectedHash, const std::string &token,
-        uint8_t nextState)
+    bool Parser::expectToken(uint8_t *state, StrHash hash, StrHash expectedHash, bool skipNewLines,
+            std::string token, uint8_t nextState)
     {
+        while(skipNewLines && hash == "\n"_hash) extractor.getNextToken(hash, &token);
         if(hash == expectedHash)
         {
             *state = nextState;
             return true;
         }
-        else if(hash == "\n"_hash) return true;
         else
         {
             errorsWriter.unexpectedTokenError(token);
@@ -80,7 +80,7 @@ namespace Lazynput
             switch(state)
             {
                 case START:
-                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "{"_hash, token, INSIDE_BLOCK))
+                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "{"_hash, true, token, INSIDE_BLOCK))
                         return false;
                     break;
                 case INSIDE_BLOCK:
@@ -123,7 +123,7 @@ namespace Lazynput
                     }
                     break;
                 case INTERFACE_START:
-                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "{"_hash, token, INSIDE_INTERFACE))
+                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "{"_hash, true, token, INSIDE_INTERFACE))
                         return false;
                     break;
                 case INSIDE_INTERFACE:
@@ -221,7 +221,7 @@ namespace Lazynput
                     }
                     break;
                 case INPUT_TYPE_COLON:
-                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, ":"_hash, token, INSIDE_INTERFACE))
+                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, ":"_hash, false, token, INSIDE_INTERFACE))
                         return false;
                     break;
             }
@@ -240,7 +240,7 @@ namespace Lazynput
             switch(state)
             {
                 case START:
-                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "{"_hash, token, INSIDE_BLOCK))
+                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "{"_hash, true, token, INSIDE_BLOCK))
                         return false;
                     break;
                 case INSIDE_BLOCK:
@@ -280,7 +280,7 @@ namespace Lazynput
                     state = LINE_END;
                     break;
                 case LINE_END:
-                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "\n"_hash, token, INSIDE_BLOCK))
+                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "\n"_hash, false, token, INSIDE_BLOCK))
                         return false;
                     break;
             }
@@ -461,7 +461,7 @@ namespace Lazynput
                     }
                     break;
                 case LINE_END:
-                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "\n"_hash, token, LINE_START))
+                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "\n"_hash, false, token, LINE_START))
                         return false;
                     break;
             }
@@ -481,7 +481,7 @@ namespace Lazynput
             switch(state)
             {
                 case START:
-                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "{"_hash, token, INSIDE_BLOCK))
+                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "{"_hash, true, token, INSIDE_BLOCK))
                         return false;
                     break;
                 case INSIDE_BLOCK:
@@ -804,7 +804,7 @@ namespace Lazynput
                 EXPECT_LABELS_BLOCK, TAG_OR_INPUT, TAG_ABSENT, END_TAG_OR_INPUT, EXPECT_INTERFACE_INPUT,
                 EQUALS_DEVICE_INPUT, EXPECT_EQUALS, END_OF_LINE}
                 state = INSIDE_DEVICE, nextState;
-        AxisHalves axisHalves;
+        AxisHalves axisHalves = FULL;
         StrHash hash, prevHash, inputHash, interfaceHash;
         std::string token, prevToken;
         bool nameDefined = false, interfacesDefined = false, labelsDefined = false;
@@ -872,12 +872,29 @@ namespace Lazynput
                             tagsStack.clear();
                             tagsStack.push_back(&device.bindings);
 
-                            if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, ":"_hash, token, TAG_OR_INPUT))
-                                return false;
-                            axisHalves = FULL;
+                            if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, ":"_hash, false, token,
+                                    TAG_OR_INPUT)) return false;
                             break;
                         case "}"_hash:
                             return true;
+                        case "!"_hash:
+                            tagsStack.clear();
+                            tagsStack.push_back(&device.bindings);
+                            state = TAG_ABSENT;
+                            break;
+                        default:
+                            if(!Utils::isNameCharacter(token[0]))
+                            {
+                                errorsWriter.unexpectedTokenError(token);
+                                return false;
+                            }
+                            tagsStack.clear();
+                            tagsStack.push_back(&device.bindings);
+                            newTag(hash, true);
+                            extractor.getNextToken(hash, &token);
+                            if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, ":"_hash, false, token,
+                                    TAG_OR_INPUT)) return false;
+                            break;
                     }
                     break;
                 case EXPECT_NAME:
@@ -1116,11 +1133,11 @@ namespace Lazynput
                     axisHalves = FULL;
                     break;
                 case EXPECT_EQUALS:
-                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "="_hash, token, nextState))
+                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "="_hash, false, token, nextState))
                         return false;
                     break;
                 case END_OF_LINE:
-                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "\n"_hash, token, nextState))
+                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "\n"_hash, false, token, nextState))
                         return false;
                     break;
             }
@@ -1143,7 +1160,7 @@ namespace Lazynput
             switch(state)
             {
                 case START:
-                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "{"_hash, token, INSIDE_BLOCK))
+                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "{"_hash, true, token, INSIDE_BLOCK))
                         return false;
                     break;
                 case INSIDE_BLOCK:
@@ -1172,7 +1189,7 @@ namespace Lazynput
                     }
                     break;
                 case AFTER_VID:
-                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "."_hash, token, EXPECT_PID))
+                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "."_hash, false, token, EXPECT_PID))
                         return false;
                     break;
                 case EXPECT_PID:
@@ -1237,8 +1254,8 @@ namespace Lazynput
                     break;
                 }
                 case AFTER_PARENT_VID:
-                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "."_hash, token, EXPECT_PARENT_PID))
-                        return false;
+                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "."_hash, false, token,
+                            EXPECT_PARENT_PID)) return false;
                     break;
                 case EXPECT_PARENT_PID:
                 {
@@ -1287,7 +1304,7 @@ namespace Lazynput
                     break;
                 }
                 case AFTER_INHERITANCE:
-                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "{"_hash, token, INSIDE_BLOCK))
+                    if(!expectToken(reinterpret_cast<uint8_t*>(&state), hash, "{"_hash, true, token, INSIDE_BLOCK))
                         return false;
                     if(parseDevice(device, deviceInterfaces))
                     {
